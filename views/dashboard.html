@@ -1,0 +1,16 @@
+<div id="dash-alert-container"></div>
+<div class="page-header" id="dash-header"></div>
+<div class="stats-grid" id="dash-stats"></div>
+<div class="charts-grid" id="dash-charts"></div>
+<div class="card">
+    <div class="card-head">
+        <div class="card-title">Solicitudes recientes</div>
+        <button class="btn btn-ghost btn-sm" onclick="nav('causas')">Ver todas <span data-ic="chevR" data-size="13"></span></button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>N° Solicitud</th><th>Fiscal</th><th>Imputado / Delito</th><th>Jurisdicción</th><th>Urgencia</th><th>Estado</th></tr></thead>
+            <tbody id="dash-recent-tbody"></tbody>
+        </table>
+    </div>
+</div>

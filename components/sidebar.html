@@ -1,0 +1,32 @@
+<aside class="sidebar open" id="sidebar">
+    <div class="sb-logo">
+        <div class="sb-logo-icon"><span data-ic="scale" data-size="18" data-color="white"></span></div>
+        <div class="sb-logo-text"><div class="sb-logo-name">Peritos</div><div class="sb-logo-sub">SISTEMA JUDICIAL</div></div>
+    </div>
+    
+    <nav class="sb-nav" id="sb-nav">
+        <button class="nav-item" data-route="dashboard" data-roles="mesa,coordinador,perito" onclick="nav('dashboard')">
+            <span class="nav-ic" style="display:flex;"><span data-ic="dash" data-size="18"></span></span><span class="nav-label">Inicio</span>
+        </button>
+        <button class="nav-item" data-route="mesa-entrada" data-roles="mesa" onclick="nav('mesa-entrada')">
+            <span class="nav-ic" style="display:flex;"><span data-ic="inbox" data-size="18"></span></span><span class="nav-label">Mesa de Entrada</span>
+        </button>
+        <button class="nav-item" data-route="asignacion" data-roles="mesa" onclick="nav('asignacion')">
+            <span class="nav-ic" style="display:flex;"><span data-ic="users" data-size="18"></span></span><span class="nav-label">Asignación de Peritos</span>
+        </button>
+        <button class="nav-item" data-route="causas" data-roles="mesa,coordinador,perito" onclick="nav('causas')">
+            <span class="nav-ic" style="display:flex;"><span data-ic="search" data-size="18"></span></span><span class="nav-label">Consulta de Causas</span>
+        </button>
+    </nav>
+    
+    <div class="sb-footer">
+        <div class="user-row">
+            <div class="user-av" id="sb-user-ini"></div>
+            <div class="user-info">
+                <div class="user-nm" id="sb-user-name"></div>
+                <div class="user-rl" id="sb-user-role"></div>
+            </div>
+            <button class="btn-icon" onclick="logout()" style="color:rgba(255,255,255,.5);"><span data-ic="logout" data-size="15"></span></button>
+        </div>
+    </div>
+</aside>

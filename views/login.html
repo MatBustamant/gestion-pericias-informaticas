@@ -1,0 +1,57 @@
+<div class="login-wrap">
+    <div class="login-left">
+        <div class="logo-row">
+            <div class="logo-icon"><span data-ic="scale" data-size="22" data-color="#0EA5E9"></span></div>
+            <div><div class="logo-name">Sistema de Peritos</div><div class="logo-sub">PODER JUDICIAL</div></div>
+        </div>
+        <div>
+            <div class="login-hero">Gestión integral de solicitudes judiciales</div>
+            <p class="login-desc">Plataforma centralizada para mesa de entrada y peritos informáticos. Recepción, asignación y seguimiento de causas en un solo lugar.</p>
+        </div>
+        <div class="login-stats">
+            <div class="login-stat"><div class="login-stat-val">248</div><div class="login-stat-lbl">Solicitudes activas</div></div>
+            <div class="login-stat"><div class="login-stat-val">34</div><div class="login-stat-lbl">Peritos</div></div>
+            <div class="login-stat"><div class="login-stat-val">1.2K</div><div class="login-stat-lbl">Causas 2026</div></div>
+        </div>
+    </div>
+    
+    <div class="login-right">
+        <div class="login-form-wrap">
+            <h2 style="font-size:22px;font-weight:700;margin-bottom:6px;">Iniciar sesión</h2>
+            <p style="font-size:14px;color:var(--muted-fg);margin-bottom:24px;">Seleccioná tu perfil e ingresá tus credenciales</p>
+            
+            <div style="margin-bottom:16px;">
+                <label>Perfil de acceso</label>
+                <div class="role-grid" id="login-roles-container"></div>
+            </div>
+            
+            <div class="form-row">
+                <label>Usuario</label>
+                <div class="input-wrap has-icon-l">
+                    <span class="input-icon">
+                        <span data-ic="user" data-size="15"></span>
+                    </span>
+                    <input type="text" placeholder="usuario@judicial.gob">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label>Contraseña</label>
+                <div class="input-wrap has-icon-l">
+                    <span class="input-icon">
+                        <span data-ic="lock" data-size="15"></span>
+                    </span>
+                    <input type="password" id="pwd" placeholder="••••••••">
+                </div>
+            </div>
+            
+            <div style="text-align:right;margin-bottom:20px;">
+                <a href="#" style="font-size:12px;color:var(--accent);font-weight:500;">¿Olvidaste tu contraseña?</a>
+            </div>
+            
+            <button class="btn btn-primary w-full" onclick="doLogin()" style="justify-content:center;padding:12px;">Ingresar al sistema</button>
+            
+            <p style="font-size:12px;color:var(--muted-fg);text-align:center;margin-top:24px;">Para fines demostrativos, seleccioná un perfil y presioná "Ingresar"</p>
+        </div>
+    </div>
+</div>

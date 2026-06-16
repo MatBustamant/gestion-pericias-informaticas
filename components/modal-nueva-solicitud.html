@@ -1,0 +1,95 @@
+<div class="modal-overlay" id="moverlay" onclick="closeMOI(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Registrar Nueva Solicitud</div>
+                <div class="modal-sub-txt" id="nom-modal-sub">Paso 1 de 2 — Datos de la solicitud</div>
+            </div>
+            <button class="btn-icon" onclick="closeM()" style="color:rgba(255,255,255,.7);"><span data-ic="x" data-size="18"></span></button>
+        </div>
+        
+        <div style="display:flex; height:4px;">
+            <div id="nom-bar-1" style="flex:1; background:var(--border);"></div>
+            <div id="nom-bar-2" style="flex:1; background:var(--border);"></div>
+        </div>
+        
+        <div class="modal-body">
+            <div id="nom-step-1">
+                <div class="g2 form-row">
+                    <div>
+                        <label>N° de Expediente *</label>
+                        <input type="text" id="nom-expediente" placeholder="ej. 12345/2026" oninput="S.form.expediente=this.value">
+                    </div>
+                    <div>
+                        <label>Urgencia *</label>
+                        <select id="nom-urgencia" oninput="S.form.urgencia=this.value">
+                            <option value="alta">Alta</option>
+                            <option value="media">Media</option>
+                            <option value="baja">Baja</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="g2 form-row">
+                    <div>
+                        <label>Imputado/a *</label>
+                        <input type="text" id="nom-imputado" placeholder="Apellido, Nombre — DNI" oninput="S.form.imputado=this.value">
+                    </div>
+                    <div>
+                        <label>Víctima *</label>
+                        <input type="text" id="nom-victima" placeholder="Persona física o jurídica" oninput="S.form.victima=this.value">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Delito investigado *</label>
+                    <input type="text" id="nom-delito" placeholder="ej. Estafa informática (art. 172 CP)" oninput="S.form.delito=this.value">
+                </div>
+                <div class="g2 form-row">
+                    <div>
+                        <label>Fiscal requirente *</label>
+                        <input type="text" id="nom-fiscal" placeholder="Dr/Dra. Apellido Nombre" oninput="S.form.fiscal=this.value">
+                    </div>
+                    <div>
+                        <label>Jurisdicción *</label>
+                        <select id="nom-jurisdiccion" oninput="S.form.jurisdiccion=this.value">
+                            <option value="">Seleccionar...</option>
+                            <option value="Capital">Capital</option>
+                            <option value="La Banda">La Banda</option>
+                            <option value="Añatuya">Añatuya</option>
+                            <option value="Frías">Frías</option>
+                            <option value="Monte Quemado">Monte Quemado</option>
+                            <option value="Termas">Termas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Descripción general de los secuestros recibidos *</label>
+                    <textarea id="nom-secuestros" placeholder="Detallar elementos secuestrados: marca, modelo, número de serie..." oninput="S.form.descripcionSecuestros=this.value"></textarea>
+                </div>
+                <div class="form-row">
+                    <label>Tareas solicitadas *</label>
+                    <textarea id="nom-tareas" placeholder="Describir las pericias y análisis requeridos..." oninput="S.form.tareassolicitadas=this.value"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="upload-area">
+                        <span data-ic="ul" data-size="22" data-color="var(--muted-fg)"></span>
+                        <p style="font-size:13px; color:var(--muted-fg); margin-top:8px;">Adjuntar solicitud digitalizada (PDF, JPG)</p>
+                        <p style="font-size:11px; color:var(--muted-fg); margin-top:2px;">Arrastrá el archivo o hacé clic</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="nom-step-2" class="hidden">
+                <div class="summary-box">
+                    <h3 style="font-size:14px; font-weight:600; color:var(--primary); margin-bottom:14px;">Resumen de la solicitud a registrar</h3>
+                    <div id="nom-summary-rows"></div>
+                </div>
+                <div class="alert alert-info">
+                    <span data-ic="alertC" data-size="16" data-color="#1D4ED8"></span>
+                    <span>Se asignará automáticamente un N° correlativo. El estado inicial será <strong>Pendiente</strong>.</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-foot" id="nom-modal-foot"></div>
+    </div>
+</div>

@@ -192,6 +192,11 @@ async function initApp() {
     try {
         COMPS.sidebar = await fetch('components/sidebar.html').then(r => r.text());
         COMPS.topbar = await fetch('components/topbar.html').then(r => r.text());
+        
+        // ¡AGREGAMOS LAS DOS LÍNEAS PARA LOS MODALES!
+        COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
+        COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
+        
         nav('login');
     } catch (e) {
         console.error("Error cargando componentes base:", e);
@@ -201,63 +206,105 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
-function rmModal(){const e=document.getElementById('moverlay');if(e)e.remove();if(!S.modal)return;let h='';if(S.modal==='nueva-solicitud')h=renderNOM();else if(S.modal==='asignar-perito')h=renderAM();if(h)document.body.insertAdjacentHTML('beforeend',h);}
-function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};rmModal();}
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o?.nroIT||''};rmModal();}
+function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
+function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o?.nroIT||''}; rmModal(); }
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
 function closeMOI(e){if(e.target.id==='moverlay')closeM();}
-function mNext(){S.modalStep=2;rmModal();}
-function mBack(){S.modalStep=1;rmModal();}
-function toggleP(nombre){if(!S.aForm.peritosSeleccionados)S.aForm.peritosSeleccionados=[];const i=S.aForm.peritosSeleccionados.indexOf(nombre);if(i>=0)S.aForm.peritosSeleccionados.splice(i,1);else S.aForm.peritosSeleccionados.push(nombre);rmModal();}
+function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
+function mBack(){S.modalStep=1; updateModalData(); } // Acá tampoco
+function toggleP(nombre){if(!S.aForm.peritosSeleccionados)S.aForm.peritosSeleccionados=[];const i=S.aForm.peritosSeleccionados.indexOf(nombre);if(i>=0)S.aForm.peritosSeleccionados.splice(i,1);else S.aForm.peritosSeleccionados.push(nombre); updateModalData(); }
 
-function renderNOM(){
-  const f=S.form;
-  const step1='<div class="g2 form-row"><div><label>N\u00b0 de Expediente *</label><input type="text" value="'+esc(f.expediente)+'" oninput="S.form.expediente=this.value" placeholder="ej. 12345/2026"></div>'+
-  '<div><label>Urgencia *</label><select oninput="S.form.urgencia=this.value"><option value="alta"'+(f.urgencia==='alta'?' selected':'')+'>Alta</option><option value="media"'+(f.urgencia==='media'?' selected':'')+'>Media</option><option value="baja"'+(f.urgencia==='baja'?' selected':'')+'>Baja</option></select></div></div>'+
-  '<div class="g2 form-row"><div><label>Imputado/a *</label><input type="text" value="'+esc(f.imputado)+'" oninput="S.form.imputado=this.value" placeholder="Apellido, Nombre — DNI"></div>'+
-  '<div><label>V\u00edctima *</label><input type="text" value="'+esc(f.victima)+'" oninput="S.form.victima=this.value" placeholder="Persona f\u00edsica o jur\u00eddica"></div></div>'+
-  '<div class="form-row"><label>Delito investigado *</label><input type="text" value="'+esc(f.delito)+'" oninput="S.form.delito=this.value" placeholder="ej. Estafa inform\u00e1tica (art. 172 CP)"></div>'+
-  '<div class="g2 form-row"><div><label>Fiscal requirente *</label><input type="text" value="'+esc(f.fiscal)+'" oninput="S.form.fiscal=this.value" placeholder="Dr/Dra. Apellido Nombre"></div>'+
-  '<div><label>Jurisdicci\u00f3n *</label><select oninput="S.form.jurisdiccion=this.value"><option value="">Seleccionar...</option>'+
-  ['Capital','La Banda','A\u00f1atuya','Fr\u00edas','Monte Quemado','Termas'].map(j=>'<option value="'+j+'"'+(f.jurisdiccion===j?' selected':'')+'>'+j+'</option>').join('')+
-  '</select></div></div>'+
-  '<div class="form-row"><label>Descripci\u00f3n general de los secuestros recibidos *</label><textarea oninput="S.form.descripcionSecuestros=this.value" placeholder="Detallar elementos secuestrados: marca, modelo, n\u00famero de serie...">'+esc(f.descripcionSecuestros)+'</textarea></div>'+
-  '<div class="form-row"><label>Tareas solicitadas *</label><textarea oninput="S.form.tareassolicitadas=this.value" placeholder="Describir las pericias y an\u00e1lisis requeridos...">'+esc(f.tareassolicitadas)+'</textarea></div>'+
-  '<div class="form-row"><div class="upload-area">'+ic('ul',22,'var(--muted-fg)')+'<p style="font-size:13px;color:var(--muted-fg);margin-top:8px;">Adjuntar solicitud digitalizada (PDF, JPG)</p><p style="font-size:11px;color:var(--muted-fg);margin-top:2px;">Arrastr\u00e1 el archivo o hac\u00e9 clic</p></div></div>';
-  const step2='<div class="summary-box"><h3 style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:14px;">Resumen de la solicitud a registrar</h3>'+
-  [['N\u00b0 Expediente',f.expediente||'—'],['Imputado/a',f.imputado||'—'],['V\u00edctima',f.victima||'—'],['Delito',f.delito||'—'],['Fiscal',f.fiscal||'—'],['Jurisdicci\u00f3n',f.jurisdiccion||'—'],['Urgencia',f.urgencia],['Estado (auto)','Pendiente']].map(([k,v])=>'<div class="summary-row"><span class="skey">'+k+'</span><span class="sval">'+esc(v)+'</span></div>').join('')+
-  '</div><div class="alert alert-info">'+ic('alertC',16,'#1D4ED8')+' <span>Se asignar\u00e1 autom\u00e1ticamente un N\u00b0 correlativo. El estado inicial ser\u00e1 <strong>Pendiente</strong>.</span></div>';
-  return '<div class="modal-overlay" id="moverlay" onclick="closeMOI(event)"><div class="modal" onclick="event.stopPropagation()">'+
-  '<div class="modal-head"><div><div class="modal-title">Registrar Nueva Solicitud</div><div class="modal-sub-txt">Paso '+S.modalStep+' de 2 — '+(S.modalStep===1?'Datos de la solicitud':'Revisi\u00f3n y confirmaci\u00f3n')+'</div></div>'+
-  '<button class="btn-icon" onclick="closeM()" style="color:rgba(255,255,255,.7);">'+ic('x',18)+'</button></div>'+
-  '<div style="display:flex;height:4px;"><div style="flex:1;background:'+(S.modalStep>=1?'var(--accent)':'var(--border)')+'"></div><div style="flex:1;background:'+(S.modalStep>=2?'var(--accent)':'var(--border)')+'"></div></div>'+
-  '<div class="modal-body">'+(S.modalStep===1?step1:step2)+'</div>'+
-  '<div class="modal-foot">'+(S.modalStep===1?'<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar '+ic('chevR',13,'white')+'</button>':'<button class="btn btn-ghost" onclick="mBack()">\u2190 Atr\u00e1s</button><button class="btn btn-primary" onclick="saveOficio()">Confirmar registro</button>')+
-  '</div></div></div>';
+// Esta función carga el esqueleto estático del modal desde la caché
+function rmModal() {
+    const e = document.getElementById('moverlay');
+    if (e) e.remove();
+    if (!S.modal) return;
+
+    let html = '';
+    if (S.modal === 'nueva-solicitud') html = COMPS.modal_nueva_solicitud;
+    else if (S.modal === 'asignar-perito') html = COMPS.modal_asignar_perito;
+
+    if (html) {
+        document.body.insertAdjacentHTML('beforeend', html);
+        const modalEl = document.getElementById('moverlay');
+        renderIcons(modalEl); // Renderizamos los iconos del modal inyectado
+        updateModalData(); // Inyectamos los datos vivos en el esqueleto
+    }
 }
 
-function renderAM(){
-  const f=S.aForm;const o=S.solicitudes.find(x=>x.id===f.solicitudId);
-  const dp=S.peritos.filter(p=>p.disp);
-  return '<div class="modal-overlay" id="moverlay" onclick="closeMOI(event)"><div class="modal modal-sm" onclick="event.stopPropagation()">'+
-  '<div class="modal-head"><div><div class="modal-title">Asignar Peritos</div><div class="modal-sub-txt">'+(o?esc(o.id)+' — '+esc(o.imputado):'')+'</div></div>'+
-  '<button class="btn-icon" onclick="closeM()" style="color:rgba(255,255,255,.7);">'+ic('x',18)+'</button></div>'+
-  '<div class="modal-body">'+
-  '<div class="form-row"><label>Fecha y hora programada para apertura del informe *</label>'+
-  '<input type="datetime-local" value="'+esc(f.fechaHoraInforme||'')+'" oninput="S.aForm.fechaHoraInforme=this.value"></div>'+
-  '<div class="form-row"><label>Peritos responsables *</label><div class="check-group">'+
-  dp.map(p=>{
-    const sel=(f.peritosSeleccionados||[]).includes(p.nombre);
-    return '<div class="check-item'+(sel?' checked':'')+'" onclick="toggleP(\''+p.nombre+'\')">'+
-      '<div class="check-box">'+(sel?ic('check',10,'white'):'')+' </div>'+
-      '<div style="flex:1;"><div style="font-weight:500;">'+esc(p.nombre)+'</div>'+
-      '<div style="font-size:11px;color:var(--muted-fg);">'+esc(p.esp)+' · Carga actual: '+p.carga+'/'+p.max+'</div></div></div>';
-  }).join('')+
-  '</div>'+((f.peritosSeleccionados||[]).length>0?'<div style="margin-top:8px;font-size:12px;color:var(--primary);font-weight:500;">Seleccionados: '+esc((f.peritosSeleccionados||[]).join(', '))+'</div>':'')+
-  '</div><div class="form-row"><label>N\u00b0 de Informe T\u00e9cnico</label>'+
-  '<input type="text" value="'+esc(f.nroInformeTecnico||'')+'" oninput="S.aForm.nroInformeTecnico=this.value" placeholder="ej. IT-2026-0115">'+
-  '<p style="font-size:11px;color:var(--muted-fg);margin-top:4px;">Este campo puede modificarse posteriormente desde el detalle.</p></div>'+
-  '</div><div class="modal-foot"><button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="saveAsig()">Guardar asignaci\u00f3n</button></div></div></div>';
+// Esta es la estrella del show: actualiza los valores del DOM sin recargar el HTML
+function updateModalData() {
+    if (S.modal === 'nueva-solicitud') {
+        const f = S.form;
+        
+        // 1. Setear valores de los inputs (Paso 1)
+        document.getElementById('nom-expediente').value = f.expediente || '';
+        document.getElementById('nom-urgencia').value = f.urgencia || 'media';
+        document.getElementById('nom-imputado').value = f.imputado || '';
+        document.getElementById('nom-victima').value = f.victima || '';
+        document.getElementById('nom-delito').value = f.delito || '';
+        document.getElementById('nom-fiscal').value = f.fiscal || '';
+        document.getElementById('nom-jurisdiccion').value = f.jurisdiccion || '';
+        document.getElementById('nom-secuestros').value = f.descripcionSecuestros || '';
+        document.getElementById('nom-tareas').value = f.tareassolicitadas || '';
+
+        // 2. Controlar visibilidad de pasos (alternando la clase .hidden de tu CSS)
+        document.getElementById('nom-step-1').classList.toggle('hidden', S.modalStep !== 1);
+        document.getElementById('nom-step-2').classList.toggle('hidden', S.modalStep !== 2);
+        
+        // 3. Barra de progreso y títulos
+        document.getElementById('nom-modal-sub').innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
+        document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
+        document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+
+        // 4. Renderizar resumen dinámico (Paso 2)
+        if (S.modalStep === 2) {
+            const rows = [
+                ['N° Expediente', f.expediente || '—'],
+                ['Imputado/a', f.imputado || '—'],
+                ['Víctima', f.victima || '—'],
+                ['Delito', f.delito || '—'],
+                ['Fiscal', f.fiscal || '—'],
+                ['Jurisdicción', f.jurisdiccion || '—'],
+                ['Urgencia', f.urgencia],
+                ['Estado (auto)', 'Pendiente']
+            ];
+            document.getElementById('nom-summary-rows').innerHTML = rows.map(([k, v]) => 
+                `<div class="summary-row"><span class="skey">${k}</span><span class="sval">${esc(v)}</span></div>`
+            ).join('');
+        }
+
+        // 5. Botones dinámicos del footer
+        document.getElementById('nom-modal-foot').innerHTML = S.modalStep === 1 
+            ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar ${ic('chevR', 13, 'white')}</button>`
+            : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">Confirmar registro</button>`;
+    } 
+    
+    else if (S.modal === 'asignar-perito') {
+        const f = S.aForm;
+        const o = S.solicitudes.find(x => x.id === f.solicitudId);
+        const dp = S.peritos.filter(p => p.disp);
+
+        document.getElementById('am-modal-sub').innerText = o ? `${esc(o.id)} — ${esc(o.imputado)}` : '';
+        document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
+        document.getElementById('am-nro-it').value = f.nroInformeTecnico || '';
+
+        // Renderizar lista de selección de peritos
+        document.getElementById('am-peritos-group').innerHTML = dp.map(p => {
+            const sel = (f.peritosSeleccionados || []).includes(p.nombre);
+            return `
+                <div class="check-item ${sel ? 'checked' : ''}" onclick="toggleP('${p.nombre}')">
+                    <div class="check-box">${sel ? ic('check', 10, 'white') : ''}</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:500;">${esc(p.nombre)}</div>
+                        <div style="font-size:11px; color:var(--muted-fg);">${esc(p.esp)} · Carga actual: ${p.carga}/${p.max}</div>
+                    </div>
+                </div>`;
+        }).join('');
+
+        const selCount = (f.peritosSeleccionados || []).length;
+        document.getElementById('am-selected-lbl').innerText = selCount > 0 ? `Seleccionados: ${(f.peritosSeleccionados).join(', ')}` : '';
+    }
 }
 
 function saveOficio(){

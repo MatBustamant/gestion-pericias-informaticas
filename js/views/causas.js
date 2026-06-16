@@ -1,0 +1,25 @@
+window.upCS = function(v){S.causasSearch=v; init_causas();}; window.setCE = function(f){S.causasEstado=f; init_causas();}; window.setCU = function(f){S.causasUrgencia=f; init_causas();}; window.setCJ = function(f){S.causasJurisdiccion=f; init_causas();}; window.toggleCF = function(){S.causasShowFilters=!S.causasShowFilters; init_causas();};
+window.init_causas = function() {
+  let list=S.solicitudes;
+  if(S.user?.role === 'perito') list = list.filter(o => o.peritos.includes(S.user.name));
+  if(S.causasSearch){const q=S.causasSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.jur.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
+  if(S.causasEstado!=='todos') list=list.filter(o=>o.estado===S.causasEstado);
+  if(S.causasUrgencia!=='todos') list=list.filter(o=>o.urgencia===S.causasUrgencia);
+  if(S.causasJurisdiccion!=='todos') list=list.filter(o=>o.jur===S.causasJurisdiccion);
+  
+  document.getElementById('causas-header').innerHTML = '<div><div class="page-title">Consulta de Causas</div><div class="page-sub">'+list.length+' causas disponibles</div></div>';
+  document.getElementById('causas-search').value = S.causasSearch;
+  
+  const ac={alta:'var(--p-high)',media:'var(--p-med)',baja:'var(--p-low)'};
+  document.getElementById('causas-btn-filter').innerHTML = '<button class="filter-btn'+(S.causasShowFilters?' active':'')+'" onclick="toggleCF()" style="display:flex;align-items:center;gap:6px;">'+ic('sliders',14)+' Filtros'+((S.causasEstado!=='todos'||S.causasUrgencia!=='todos'||S.causasJurisdiccion!=='todos')?'<span style="width:16px;height:16px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;">'+[S.causasEstado,S.causasUrgencia,S.causasJurisdiccion].filter(f=>f!=='todos').length+'</span>':'')+'</button>';
+  
+  const juris=[...new Set(S.solicitudes.map(o=>o.jur))];
+  document.getElementById('causas-panel-filters').innerHTML = S.causasShowFilters?'<div class="filters-panel"><div><div class="fg-lbl">ESTADO</div><div class="filter-pills">'+
+  ['todos','pendiente','en-proceso','resuelto'].map(f=>'<button class="filter-btn'+(S.causasEstado===f?' active':'')+'" onclick="setCE(\''+f+'\')">'+{todos:'Todos',pendiente:'Pendiente',['en-proceso']:'En proceso',resuelto:'Resuelto'}[f]+'</button>').join('')+'</div></div><div class="filter-divider"></div>'+
+  '<div><div class="fg-lbl">URGENCIA</div><div class="filter-pills">'+['todos','alta','media','baja'].map(f=>'<button class="filter-btn'+(S.causasUrgencia===f?' active':'')+'" onclick="setCU(\''+f+'\')">'+{todos:'Todas',alta:'Alta',media:'Media',baja:'Baja'}[f]+'</button>').join('')+'</div></div><div class="filter-divider"></div>'+
+  '<div><div class="fg-lbl">JURISDICCI\u00d3N</div><div class="filter-pills"><button class="filter-btn'+(S.causasJurisdiccion==='todos'?' active':'')+'" onclick="setCJ(\'todos\')">Todas</button>'+juris.map(j=>'<button class="filter-btn'+(S.causasJurisdiccion===j?' active':'')+'" onclick="setCJ(\''+j+'\')">'+j+'</button>').join('')+'</div></div></div>':'';
+  
+  document.getElementById('causas-list').innerHTML = '<div style="font-size:13px;color:var(--muted-fg);margin-bottom:12px;">'+list.length+' resultado'+(list.length!==1?'s':'')+(S.causasSearch?' para "<strong>'+esc(S.causasSearch)+'</strong>"':'')+'</div>'+
+  (list.length===0?'<div class="card"><div class="empty-state">'+ic('search',36,'var(--muted-fg)')+'<p style="font-size:15px;font-weight:500;margin-top:12px;">Sin resultados</p><p style="font-size:13px;margin-top:4px;">Prob\u00e1 con otros t\u00e9rminos o cambi\u00e1 los filtros</p></div></div>':'')+
+  list.map(o=>'<div class="causa-card" onclick="nav(\'detalle-causa\',\''+o.id+'\')"><div class="causa-accent" style="background:'+ac[o.urgencia]+';min-height:60px;"></div><div style="flex:1;min-width:0;"><div class="causa-meta" style="margin-bottom:4px;"><span class="td-mono" style="font-size:12px;">'+esc(o.id)+'</span><span style="color:var(--muted-fg);">·</span><span style="font-size:12px;color:var(--muted-fg);">Exp. '+esc(o.exp)+'</span><span style="margin-left:auto;">'+bdg(o.estado)+'</span></div><div class="causa-title">'+esc(o.imputado)+' s/ '+esc(o.delito)+'</div><div class="causa-meta">'+ic('pin',11,'var(--muted-fg)')+' '+esc(o.jur)+' · '+ic('file',11,'var(--muted-fg)')+' '+esc(o.fiscal)+' · '+ic('clock',11,'var(--muted-fg)')+' Vence '+esc(o.venc)+(o.peritos.length>0?' · '+ic('user',11,'var(--primary)')+' <span style="color:var(--primary);">'+esc(o.peritos.join(', '))+'</span>':'')+'</div></div><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();nav(\'detalle-causa\',\''+o.id+'\')">'+ic('eye',13)+' Ver</button></div>').join('');
+};

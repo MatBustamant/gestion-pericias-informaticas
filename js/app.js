@@ -43,10 +43,10 @@ function renderIcons(container = document) {
         const size = el.getAttribute('data-size') || 16;
         const color = el.getAttribute('data-color') || 'currentColor';
         
-        // Inyectamos el ícono ADENTRO del span, replicando la estructura anidada original
-        el.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;flex-shrink:0;color:${color};">${(IC[name]||'')}</span>`;
+        // Aplicamos el inline-flex directamente al span original, evitando "dobles spans"
+        el.style.cssText += `display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;flex-shrink:0;color:${color};`;
+        el.innerHTML = (IC[name]||''); // Inyectamos solo el SVG puro
         
-        // Limpiamos los atributos de datos para que el HTML quede prolijo
         el.removeAttribute('data-ic');
         el.removeAttribute('data-size');
         el.removeAttribute('data-color');
@@ -106,7 +106,10 @@ const NAV=[
 ];
 function screenLbl(){const s=S.screen==='detalle-causa'?'causas':S.screen;return (NAV.find(n=>n.id===s)||{lbl:'Detalle'}).lbl;}
 
-/* ===== ROUTER ===== */
+/* ===== CACHÉ DE COMPONENTES ===== */
+const COMPS = { sidebar: '', topbar: '' };
+
+/* ===== ROUTER Y COMPONENTES ===== */
 async function nav(screen, id = '') {
     if (screen === 'detalle-causa' && id) { S.detailId = id; S.detalleTab = 'info'; }
     S.screen = screen;
@@ -116,25 +119,26 @@ async function nav(screen, id = '') {
         const html = await fetch('views/login.html').then(r => r.text());
         app.innerHTML = html;
         renderIcons(app);
-
-        if (window.init_login) window.init_login();
-
+        if (window.init_login) window.init_login(); 
         return;
     }
 
     try {
         const html = await fetch(`views/${screen}.html`).then(r => r.text());
+        
+        // Inyectamos el Shell usando los componentes cacheados
         app.innerHTML = `
             <div class="app-shell" id="shell">
-                ${renderSB()}
+                ${COMPS.sidebar}
                 <div class="main-area">
-                    ${renderTB()}
+                    ${COMPS.topbar}
                     <main class="content" id="mc">${html}</main>
                 </div>
             </div>`;
+            
         renderIcons(app);
+        updateShell(); // Actualizamos datos del usuario y botones activos
         
-        // Ejecutar inicializador de la vista actual
         const initFn = window['init_' + screen.replace('-', '_')];
         if (initFn) initFn();
 
@@ -146,37 +150,60 @@ async function nav(screen, id = '') {
         app.innerHTML = "<h2>Error cargando la vista</h2>";
     }
 }
+
+// Función que manipula el DOM del Shell sin recargarlo desde cero
+function updateShell() {
+    // 1. Sidebar: Mostrar/Ocultar según rol y marcar botón activo
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        const route = btn.getAttribute('data-route');
+        const roles = btn.getAttribute('data-roles').split(',');
+        const isActive = (S.screen === 'detalle-causa' ? 'causas' : S.screen) === route;
+        
+        btn.style.display = roles.includes(S.user?.role) ? 'flex' : 'none';
+        btn.classList.toggle('active', isActive);
+        
+        const iconContainer = btn.querySelector('.nav-ic span');
+        if(iconContainer) {
+             iconContainer.style.color = isActive ? 'var(--sb-accent)' : 'rgba(255,255,255,.65)';
+        }
+    });
+
+    // 2. Sidebar: Datos del Usuario
+    const u = ROLES[S.user?.role] || ROLES.mesa;
+    document.getElementById('sb-user-ini').innerText = u.ini;
+    document.getElementById('sb-user-name').innerText = u.name;
+    document.getElementById('sb-user-role').innerText = u.lbl;
+
+    // 3. Topbar: Título y Breadcrumbs
+    document.getElementById('tb-screen-name').innerText = screenLbl();
+    const sep = document.getElementById('tb-detail-separator');
+    const idEl = document.getElementById('tb-detail-id');
+    
+    if (S.screen === 'detalle-causa' && S.detailId) {
+        sep.style.display = 'flex';
+        idEl.style.display = 'block';
+        idEl.innerText = S.detailId;
+    } else {
+        sep.style.display = 'none';
+        idEl.style.display = 'none';
+    }
+}
+
 function toggleSB(){S.sidebarOpen=!S.sidebarOpen;const sb=document.getElementById('sidebar');if(sb){sb.classList.toggle('open',S.sidebarOpen);sb.classList.toggle('closed',!S.sidebarOpen);}}
 
-/* ===== SHELL COMPONENTS ===== */
-function renderSB(){
-  const r=S.user?.role||'mesa';const u=ROLES[r]||ROLES.mesa;
-  const items=NAV.filter(n=>n.roles.includes(r));
-  const cls=S.sidebarOpen?'open':'closed';
-  return '<aside class="sidebar '+cls+'" id="sidebar"><div class="sb-logo">'+
-    '<div class="sb-logo-icon">'+ic('scale',18,'white')+'</div>'+
-    '<div class="sb-logo-text"><div class="sb-logo-name">Peritos</div><div class="sb-logo-sub">SISTEMA JUDICIAL</div></div></div>'+
-    '<nav class="sb-nav">'+items.map(item=>{
-      const a=(S.screen==='detalle-causa'?'causas':S.screen)===item.id;
-      return '<button class="nav-item'+(a?' active':'')+'" onclick="nav(\''+item.id+'\')">'+
-        '<span class="nav-ic" style="display:flex;color:'+(a?'var(--sb-accent)':'rgba(255,255,255,.65)')+'">'+ic(item.ic,18)+'</span>'+
-        '<span class="nav-label">'+item.lbl+'</span></button>';
-    }).join('')+'</nav>'+
-    '<div class="sb-footer"><div class="user-row">'+
-    '<div class="user-av">'+esc(u.ini)+'</div>'+
-    '<div class="user-info"><div class="user-nm">'+esc(u.name)+'</div><div class="user-rl">'+esc(u.lbl)+'</div></div>'+
-    '<button class="btn-icon" onclick="logout()" style="color:rgba(255,255,255,.5);">'+ic('logout',15)+'</button>'+
-    '</div></div></aside>';
+/* ===== START (BOOTSTRAPPER) ===== */
+// Ahora arrancamos la app descargando primero los componentes globales
+async function initApp() {
+    try {
+        COMPS.sidebar = await fetch('components/sidebar.html').then(r => r.text());
+        COMPS.topbar = await fetch('components/topbar.html').then(r => r.text());
+        nav('login');
+    } catch (e) {
+        console.error("Error cargando componentes base:", e);
+    }
 }
 
-function renderTB(){
-  return '<header class="topbar">'+
-    '<button class="btn-icon" onclick="toggleSB()">'+ic('menu',18)+'</button>'+
-    '<div class="breadcrumb"><span>Sistema de Gesti\u00f3n</span><span style="display:flex;">'+ic('chevR',13)+'</span>'+
-    '<span class="breadcrumb-cur">'+screenLbl()+'</span>'+
-    (S.screen==='detalle-causa'&&S.detailId?'<span style="display:flex;">'+ic('chevR',13)+'</span><span class="breadcrumb-cur mono" style="font-size:12px;">'+esc(S.detailId)+'</span>':'')+
-    '</div><div class="notif-wrap"><button class="btn-icon">'+ic('bell',18)+'</button><span class="notif-dot"></span></div></header>';
-}
+document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
 function rmModal(){const e=document.getElementById('moverlay');if(e)e.remove();if(!S.modal)return;let h='';if(S.modal==='nueva-solicitud')h=renderNOM();else if(S.modal==='asignar-perito')h=renderAM();if(h)document.body.insertAdjacentHTML('beforeend',h);}
@@ -269,6 +296,3 @@ function saveAsig(){
   }
   closeM();S.successMsg='Asignaci\u00f3n guardada para '+f.solicitudId;nav(S.screen);
 }
-
-// Arrancar App
-document.addEventListener('DOMContentLoaded', () => nav('login'));

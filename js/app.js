@@ -41,15 +41,10 @@ function renderIcons(container = document) {
     container.querySelectorAll('[data-ic]').forEach(el => {
         const name = el.getAttribute('data-ic');
         const size = el.getAttribute('data-size') || 16;
-        const color = el.getAttribute('data-color') || 'currentColor';
+        const color = el.getAttribute('data-color') || undefined; 
         
-        // Aplicamos el inline-flex directamente al span original, evitando "dobles spans"
-        el.style.cssText += `display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;flex-shrink:0;color:${color};`;
-        el.innerHTML = (IC[name]||''); // Inyectamos solo el SVG puro
-        
-        el.removeAttribute('data-ic');
-        el.removeAttribute('data-size');
-        el.removeAttribute('data-color');
+        // outerHTML destruye el span fantasma y lo reemplaza por el output limpio de ic()
+        el.outerHTML = ic(name, size, color);
     });
 }
 

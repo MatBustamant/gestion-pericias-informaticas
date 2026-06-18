@@ -161,7 +161,7 @@ function updateModalData() {
         // 4. Renderizar resumen dinámico (Paso 2)
         if (S.modalStep === 2) {
             const rows = [
-                ['N° Expediente', f.expediente || '—'],
+                ['N° de Legajo de Causa', f.expediente || '—'],
                 ['Imputado/a', f.imputado || '—'],
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],
@@ -188,7 +188,6 @@ function updateModalData() {
 
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
-        document.getElementById('am-nro-it').value = f.nroInformeTecnico || '';
 
         // Renderizar lista de selección de peritos
         document.getElementById('am-peritos-group').innerHTML = dp.map(p => {

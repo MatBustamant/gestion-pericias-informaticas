@@ -17,7 +17,7 @@ window.init_mesa_entrada = function() {
   document.getElementById('mesa-filters').innerHTML = fl.map(f=>'<button class="filter-btn'+(S.mesaFiltro===f?' active':'')+'" onclick="setMF(\''+f+'\')">'+flbl[f]+'</button>').join('');
   
   document.getElementById('mesa-tbody').innerHTML = list.length===0?'<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted-fg);">Sin resultados</td></tr>':
-  list.map(o=>'<tr onclick="nav(\'detalle-causa\',\''+o.id+'\')"><td class="td-mono">'+esc(o.id)+'</td><td style="font-size:12px;color:var(--muted-fg);">'+esc(o.exp)+'</td>'+
+  list.map(o=>'<tr onclick="nav(\'detalle-causa\',\''+o.id+'\')"><td class="td-mono">'+(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)+'</td><td style="font-size:12px;color:var(--muted-fg);">'+esc(o.exp)+'</td>'+
   '<td><div class="td-trunc" style="max-width:140px;">'+esc(o.imputado)+'</div></td><td><div class="td-trunc" style="max-width:160px;font-size:12px;color:var(--muted-fg);">'+esc(o.delito)+'</div></td>'+
   '<td style="font-size:12px;">'+esc(o.fiscal)+'</td><td style="font-size:12px;">'+esc(o.jur)+'</td><td style="font-size:12px;color:var(--muted-fg);white-space:nowrap;">'+esc(o.ingreso)+'</td>'+
   '<td>'+ubdg(o.urgencia)+'</td><td>'+bdg(o.estado)+'</td>'+

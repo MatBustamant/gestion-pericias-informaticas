@@ -72,9 +72,12 @@ function updateShell() {
     const idEl = document.getElementById('tb-detail-id');
     
     if (S.screen === 'detalle-causa' && S.detailId) {
+        const o = S.solicitudes.find(x => x.id === S.detailId);
+        const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
+        
         sep.style.display = 'flex';
         idEl.style.display = 'block';
-        idEl.innerText = S.detailId;
+        idEl.innerText = prefijo + S.detailId;
     } else {
         sep.style.display = 'none';
         idEl.style.display = 'none';
@@ -135,6 +138,7 @@ function updateModalData() {
         const f = S.form;
         
         // 1. Setear valores de los inputs (Paso 1)
+        document.getElementById('nom-tipo').value = f.tipo || 'general';
         document.getElementById('nom-expediente').value = f.expediente || '';
         document.getElementById('nom-urgencia').value = f.urgencia || 'media';
         document.getElementById('nom-imputado').value = f.imputado || '';
@@ -182,7 +186,7 @@ function updateModalData() {
         const o = S.solicitudes.find(x => x.id === f.solicitudId);
         const dp = S.peritos.filter(p => p.disp);
 
-        document.getElementById('am-modal-sub').innerText = o ? `${esc(o.id)} — ${esc(o.imputado)}` : '';
+        document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
         document.getElementById('am-nro-it').value = f.nroInformeTecnico || '';
 
@@ -207,9 +211,12 @@ function updateModalData() {
 function saveOficio(){
   const f=S.form;
   if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
-  const id=genId();const td=todayStr();
-  S.solicitudes.unshift({id,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,fhi:null,peritos:[]});
-  closeM();S.successMsg='Solicitud registrada exitosamente. N\u00b0 asignado: '+id;nav(S.screen);
+  const id=genId(f.tipo);
+  const td=todayStr();
+  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,fhi:null,peritos:[]});
+  closeM();
+  S.successMsg = `Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`;
+  nav(S.screen);
 }
 
 function saveAsig(){
@@ -229,5 +236,7 @@ function saveAsig(){
        if(p) { p.carga++; p.disp = p.carga < p.max; }
     });
   }
-  closeM();S.successMsg='Asignaci\u00f3n guardada para '+f.solicitudId;nav(S.screen);
+  closeM();
+  S.successMsg=`Asignaci\u00f3n guardada para ${(o.tipo==='narco'?'NAR-':'GEN-')}${f.solicitudId}`;
+  nav(S.screen);
 }

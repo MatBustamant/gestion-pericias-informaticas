@@ -17,6 +17,13 @@
             <div id="nom-step-1">
                 <div class="g2 form-row">
                     <div>
+                        <label>Tipo de Solicitud *</label>
+                        <select id="nom-tipo" oninput="S.form.tipo=this.value">
+                            <option value="general">General</option>
+                            <option value="narco">Narco Menudeo</option>
+                        </select>
+                    </div>
+                    <div>
                         <label>N° de Legajo de Causa *</label>
                         <input type="text" id="nom-expediente" placeholder="ej. 12345/2026" oninput="S.form.expediente=this.value">
                     </div>

@@ -52,7 +52,7 @@ window.init_dashboard = function() {
   }
   
   document.getElementById('dash-recent-tbody').innerHTML = recent.length===0?'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted-fg);">Sin solicitudes</td></tr>':
-  recent.map(o=>'<tr onclick="nav(\'detalle-causa\',\''+o.id+'\')"><td class="td-mono">'+esc(o.id)+'</td><td style="font-size:12px;">'+esc(o.fiscal)+'</td>'+
+  recent.map(o=>'<tr onclick="nav(\'detalle-causa\',\''+o.id+'\')"><td class="td-mono">'+(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)+'</td><td style="font-size:12px;">'+esc(o.fiscal)+'</td>'+
   '<td><div class="td-trunc">'+esc(o.imputado)+' s/ '+esc(o.delito)+'</div></td><td style="font-size:12px;color:var(--muted-fg);">'+esc(o.jur)+'</td>'+
   '<td>'+ubdg(o.urgencia)+'</td><td>'+bdg(o.estado)+'</td></tr>').join('');
 };

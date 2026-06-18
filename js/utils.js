@@ -46,7 +46,7 @@ function renderIcons(container = document) {
 }
 
 /* ===== UTILS ===== */
-function genId(){return 'SOL-2026-0'+String(S.idCounter++);}
+function genId(){return '20260'+String(S.idCounter++);}
 function todayStr(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 function timeStr(){return new Date().toTimeString().slice(0,5);}
 function fmtDT(s){if(!s)return '—';const d=new Date(s);if(isNaN(d))return s;return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}

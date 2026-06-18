@@ -7,7 +7,7 @@ window.init_causas = function() {
   if(S.causasUrgencia!=='todos') list=list.filter(o=>o.urgencia===S.causasUrgencia);
   if(S.causasJurisdiccion!=='todos') list=list.filter(o=>o.jur===S.causasJurisdiccion);
   
-  document.getElementById('causas-header').innerHTML = '<div><div class="page-title">Consulta de Causas</div><div class="page-sub">'+list.length+' causas disponibles</div></div>';
+  document.getElementById('causas-header').innerHTML = '<div><div class="page-title">Consulta de Solicitudes</div><div class="page-sub">'+list.length+' causas disponibles</div></div>';
   document.getElementById('causas-search').value = S.causasSearch;
   
   const ac={alta:'var(--p-high)',media:'var(--p-med)',baja:'var(--p-low)'};

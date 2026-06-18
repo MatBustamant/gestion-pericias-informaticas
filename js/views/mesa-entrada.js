@@ -20,7 +20,7 @@ window.init_mesa_entrada = function() {
   list.map(o=>'<tr onclick="nav(\'detalle-causa\',\''+o.id+'\')"><td class="td-mono">'+esc(o.id)+'</td><td style="font-size:12px;color:var(--muted-fg);">'+esc(o.exp)+'</td>'+
   '<td><div class="td-trunc" style="max-width:140px;">'+esc(o.imputado)+'</div></td><td><div class="td-trunc" style="max-width:160px;font-size:12px;color:var(--muted-fg);">'+esc(o.delito)+'</div></td>'+
   '<td style="font-size:12px;">'+esc(o.fiscal)+'</td><td style="font-size:12px;">'+esc(o.jur)+'</td><td style="font-size:12px;color:var(--muted-fg);white-space:nowrap;">'+esc(o.ingreso)+'</td>'+
-  '<td style="font-size:12px;white-space:nowrap;color:'+(o.urgencia==='alta'?'var(--p-high)':'var(--muted-fg)')+';">'+esc(o.venc)+'</td><td>'+ubdg(o.urgencia)+'</td><td>'+bdg(o.estado)+'</td>'+
+  '<td>'+ubdg(o.urgencia)+'</td><td>'+bdg(o.estado)+'</td>'+
   '<td><button class="btn-icon" onclick="event.stopPropagation();nav(\'detalle-causa\',\''+o.id+'\')">'+ic('eye',15)+'</button></td></tr>').join('');
   
   document.getElementById('mesa-pagination').innerHTML = '<span>Mostrando '+list.length+' de '+S.solicitudes.length+' solicitudes</span><div class="page-btns"><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button></div>';

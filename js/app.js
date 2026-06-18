@@ -207,9 +207,8 @@ function updateModalData() {
 function saveOficio(){
   const f=S.form;
   if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
-  const id=genId();const td=todayStr();const d=new Date();d.setDate(d.getDate()+14);
-  const venc=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-  S.solicitudes.unshift({id,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,venc,fhi:null,peritos:[]});
+  const id=genId();const td=todayStr();
+  S.solicitudes.unshift({id,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,fhi:null,peritos:[]});
   closeM();S.successMsg='Solicitud registrada exitosamente. N\u00b0 asignado: '+id;nav(S.screen);
 }
 

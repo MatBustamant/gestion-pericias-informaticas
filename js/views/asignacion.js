@@ -1,4 +1,16 @@
-window.confirmAsig = function(id){ S.asigGuardados.add(id); init_asignacion(); };
+window.confirmAsig = function(id) { 
+    S.asigGuardados.add(id); 
+    
+    const o = S.solicitudes.find(x => x.id === id);
+    
+    if (o && o.estado === 'pendiente') {
+        o.estado = 'en-proceso';
+    }
+    
+    init_asignacion(); 
+};
+
+// Función para dibujar la vista de asignación
 window.init_asignacion = function() {
   const pend=S.solicitudes.filter(o=>o.estado!=='resuelto');
   document.getElementById('asig-header').innerHTML = '<div><div class="page-title">Asignaci\u00f3n de Peritos</div><div class="page-sub">'+S.solicitudes.filter(o=>o.peritos.length===0&&o.estado==='pendiente').length+' solicitudes pendientes de asignación</div></div>';

@@ -220,8 +220,8 @@ function saveOficio(){
 
 function saveAsig(){
   const f=S.aForm;
-  if(!f.fechaHoraInforme){alert('Por favor indic\u00e1 la fecha y hora para la apertura del informe.');return;}
-  if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccion\u00e1 al menos un perito.');return;}
+  if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
+  if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
   const o=S.solicitudes.find(x=>x.id===f.solicitudId);
   if(o){
     o.peritos.forEach(oldPName => {
@@ -229,7 +229,6 @@ function saveAsig(){
        if(p && p.carga > 0) { p.carga--; p.disp = p.carga < p.max; }
     });
     o.peritos=[...f.peritosSeleccionados]; o.fhi=f.fechaHoraInforme;
-    if(o.estado==='pendiente')o.estado='en-proceso';
     o.peritos.forEach(newPName => {
        const p = S.peritos.find(x => x.nombre === newPName);
        if(p) { p.carga++; p.disp = p.carga < p.max; }

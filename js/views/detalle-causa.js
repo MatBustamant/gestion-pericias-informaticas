@@ -1,5 +1,4 @@
 window.setDT = function(t){ S.detalleTab=t; init_detalle_causa(); };
-window.saveNota = function(id){const ta=document.getElementById('nota-ta');if(!ta||!ta.value.trim())return;if(!S.notas[id])S.notas[id]=[];S.notas[id].push({t:ta.value.trim(),u:S.user?.name||'Sistema',f:todayStr()+' '+timeStr()});const o=S.solicitudes.find(x=>x.id===id);if(o)o.hist.push({f:todayStr()+' '+timeStr(),e:'Nota interna agregada',u:S.user?.name||'Sistema',c:'#7C3AED'});init_detalle_causa();};
 
 window.init_detalle_causa = function() {
   const o=S.solicitudes.find(x=>x.id===S.detailId);

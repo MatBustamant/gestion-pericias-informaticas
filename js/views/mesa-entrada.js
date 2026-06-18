@@ -6,8 +6,6 @@ window.init_mesa_entrada = function() {
   if(S.mesaSearch){const q=S.mesaSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.jur.toLowerCase().includes(q));}
   if(S.mesaFiltro!=='todos') list=list.filter(o=>o.estado===S.mesaFiltro);
   
-  if(S.successMsg) document.getElementById('mesa-alert-container').innerHTML = '<div class="alert alert-success">'+ic('checkC',16,'#065F46')+' '+esc(S.successMsg)+'</div>';
-  
   document.getElementById('mesa-header').innerHTML = '<div><div class="page-title">Mesa de Entrada</div><div class="page-sub">'+S.solicitudes.length+' solicitudes registradas</div></div><button class="btn btn-primary" onclick="openModal(\'nueva-solicitud\')">'+ic('plus',15,'white')+' Registrar solicitud</button>';
   
   document.getElementById('mesa-search').value = S.mesaSearch;

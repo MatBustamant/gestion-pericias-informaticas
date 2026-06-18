@@ -18,12 +18,18 @@ async function nav(screen, id = '') {
     try {
         const html = await fetch(`views/${screen}.html`).then(r => r.text());
         
+        // Construimos la alerta global si hay un mensaje de éxito
+        const alertHtml = S.successMsg 
+            ? `<div style="padding: 1rem 2rem 0 2rem;"><div class="alert alert-success">${ic('checkC', 16, '#065F46')} ${esc(S.successMsg)}</div></div>` 
+            : '';
+
         // Inyectamos el Shell usando los componentes cacheados
         app.innerHTML = `
             <div class="app-shell" id="shell">
                 ${COMPS.sidebar}
                 <div class="main-area">
                     ${COMPS.topbar}
+                    ${alertHtml}
                     <main class="content" id="mc">${html}</main>
                 </div>
             </div>`;
@@ -223,6 +229,7 @@ function saveAsig(){
   if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
   if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
   const o=S.solicitudes.find(x=>x.id===f.solicitudId);
+  const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
   if(o){
     o.peritos.forEach(oldPName => {
        const p = S.peritos.find(x => x.nombre === oldPName);
@@ -235,6 +242,6 @@ function saveAsig(){
     });
   }
   closeM();
-  S.successMsg=`Asignaci\u00f3n guardada para ${(o.tipo==='narco'?'NAR-':'GEN-')}${f.solicitudId}`;
+  S.successMsg = `Asignación guardada para ${prefijo}${f.solicitudId}`;
   nav(S.screen);
 }

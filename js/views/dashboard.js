@@ -30,8 +30,6 @@ window.init_dashboard = function() {
   const dots=md.map((v,i)=>'<circle cx="'+Math.round(i*(W/(md.length-1)))+'" cy="'+(H-Math.round(((v-mn)/(mxV-mn))*H))+'" r="4" fill="#0EA5E9"/>').join('');
   const recent = ofs.slice(0,4); 
   
-  if(S.successMsg) document.getElementById('dash-alert-container').innerHTML = '<div class="alert alert-success mb-4">'+ic('checkC',16,'#065F46')+' '+esc(S.successMsg)+'</div>';
-  
   document.getElementById('dash-header').innerHTML = '<div><div class="page-title">Bienvenido/a, '+esc(u.name)+'</div><div class="page-sub">Lunes 15 de junio de 2026 — Sistema de gesti\u00f3n de peritos inform\u00e1ticos</div></div>'+ (r==='mesa'?'<button class="btn btn-primary" onclick="openModal(\'nueva-solicitud\')">'+ic('plus',15,'white')+' Nueva solicitud</button>':'');
   
   document.getElementById('dash-stats').innerHTML = stats.map(s=>'<div class="stat-card"><div class="stat-iw" style="background:'+s.bg+';">'+ic(s.ic,17,s.col)+'</div><div class="stat-val">'+s.val+'</div><div class="stat-lbl">'+s.lbl+'</div><div class="stat-sub">'+s.sub+'</div></div>').join('');

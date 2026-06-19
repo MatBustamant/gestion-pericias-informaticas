@@ -17,7 +17,14 @@
             <div id="nom-step-1">
                 <div class="g2 form-row">
                     <div>
-                        <label>N° de Expediente *</label>
+                        <label>Tipo de Solicitud *</label>
+                        <select id="nom-tipo" oninput="S.form.tipo=this.value">
+                            <option value="general">General</option>
+                            <option value="narco">Narco Menudeo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>N° de Legajo de Causa *</label>
                         <input type="text" id="nom-expediente" placeholder="ej. 12345/2026" oninput="S.form.expediente=this.value">
                     </div>
                     <div>
@@ -45,11 +52,11 @@
                 </div>
                 <div class="g2 form-row">
                     <div>
-                        <label>Fiscal requirente *</label>
+                        <label>Fiscal solicitante *</label>
                         <input type="text" id="nom-fiscal" placeholder="Dr/Dra. Apellido Nombre" oninput="S.form.fiscal=this.value">
                     </div>
                     <div>
-                        <label>Jurisdicción *</label>
+                        <label>Circunscripción *</label>
                         <select id="nom-jurisdiccion" oninput="S.form.jurisdiccion=this.value">
                             <option value="">Seleccionar...</option>
                             <option value="Capital">Capital</option>
@@ -66,7 +73,7 @@
                     <textarea id="nom-secuestros" placeholder="Detallar elementos secuestrados: marca, modelo, número de serie..." oninput="S.form.descripcionSecuestros=this.value"></textarea>
                 </div>
                 <div class="form-row">
-                    <label>Tareas solicitadas *</label>
+                    <label>Tareas pedidas *</label>
                     <textarea id="nom-tareas" placeholder="Describir las pericias y análisis requeridos..." oninput="S.form.tareassolicitadas=this.value"></textarea>
                 </div>
                 <div class="form-row">
@@ -85,7 +92,7 @@
                 </div>
                 <div class="alert alert-info">
                     <span data-ic="alertC" data-size="16" data-color="#1D4ED8"></span>
-                    <span>Se asignará automáticamente un N° correlativo. El estado inicial será <strong>Pendiente</strong>.</span>
+                    <span>Se asignará automáticamente un N° interno. El estado inicial será <strong>Pendiente</strong>.</span>
                 </div>
             </div>
         </div>

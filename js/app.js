@@ -18,12 +18,18 @@ async function nav(screen, id = '') {
     try {
         const html = await fetch(`views/${screen}.html`).then(r => r.text());
         
+        // Construimos la alerta global si hay un mensaje de éxito
+        const alertHtml = S.successMsg 
+            ? `<div style="padding: 1rem 2rem 0 2rem;"><div class="alert alert-success">${ic('checkC', 16, '#065F46')} ${esc(S.successMsg)}</div></div>` 
+            : '';
+
         // Inyectamos el Shell usando los componentes cacheados
         app.innerHTML = `
             <div class="app-shell" id="shell">
                 ${COMPS.sidebar}
                 <div class="main-area">
                     ${COMPS.topbar}
+                    ${alertHtml}
                     <main class="content" id="mc">${html}</main>
                 </div>
             </div>`;
@@ -72,9 +78,12 @@ function updateShell() {
     const idEl = document.getElementById('tb-detail-id');
     
     if (S.screen === 'detalle-causa' && S.detailId) {
+        const o = S.solicitudes.find(x => x.id === S.detailId);
+        const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
+        
         sep.style.display = 'flex';
         idEl.style.display = 'block';
-        idEl.innerText = S.detailId;
+        idEl.innerText = prefijo + S.detailId;
     } else {
         sep.style.display = 'none';
         idEl.style.display = 'none';
@@ -103,8 +112,8 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
-function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o?.nroIT||''}; rmModal(); }
+function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
+function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
 function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
@@ -135,6 +144,7 @@ function updateModalData() {
         const f = S.form;
         
         // 1. Setear valores de los inputs (Paso 1)
+        document.getElementById('nom-tipo').value = f.tipo || 'general';
         document.getElementById('nom-expediente').value = f.expediente || '';
         document.getElementById('nom-urgencia').value = f.urgencia || 'media';
         document.getElementById('nom-imputado').value = f.imputado || '';
@@ -157,7 +167,7 @@ function updateModalData() {
         // 4. Renderizar resumen dinámico (Paso 2)
         if (S.modalStep === 2) {
             const rows = [
-                ['N° Expediente', f.expediente || '—'],
+                ['N° de Legajo de Causa', f.expediente || '—'],
                 ['Imputado/a', f.imputado || '—'],
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],
@@ -182,9 +192,8 @@ function updateModalData() {
         const o = S.solicitudes.find(x => x.id === f.solicitudId);
         const dp = S.peritos.filter(p => p.disp);
 
-        document.getElementById('am-modal-sub').innerText = o ? `${esc(o.id)} — ${esc(o.imputado)}` : '';
+        document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
-        document.getElementById('am-nro-it').value = f.nroInformeTecnico || '';
 
         // Renderizar lista de selección de peritos
         document.getElementById('am-peritos-group').innerHTML = dp.map(p => {
@@ -207,31 +216,32 @@ function updateModalData() {
 function saveOficio(){
   const f=S.form;
   if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
-  const id=genId();const td=todayStr();const d=new Date();d.setDate(d.getDate()+14);
-  const venc=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-  S.solicitudes.unshift({id,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,venc,fhi:null,peritos:[],nroIT:null,hist:[{f:td+' '+timeStr(),e:'Solicitud recibida en mesa de entrada',u:S.user?.name||'Sistema',c:'#1D4ED8'},{f:td+' '+timeStr(),e:'Registrado en el sistema como '+id,u:S.user?.name||'Sistema',c:'#1D4ED8'}]});
-  closeM();S.successMsg='Solicitud registrada exitosamente. N\u00b0 asignado: '+id;nav(S.screen);
+  const id=genId(f.tipo);
+  const td=todayStr();
+  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,fhi:null,peritos:[]});
+  closeM();
+  S.successMsg = `Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`;
+  nav(S.screen);
 }
 
 function saveAsig(){
   const f=S.aForm;
-  if(!f.fechaHoraInforme){alert('Por favor indic\u00e1 la fecha y hora para la apertura del informe.');return;}
-  if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccion\u00e1 al menos un perito.');return;}
+  if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
+  if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
   const o=S.solicitudes.find(x=>x.id===f.solicitudId);
+  const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
   if(o){
     o.peritos.forEach(oldPName => {
        const p = S.peritos.find(x => x.nombre === oldPName);
        if(p && p.carga > 0) { p.carga--; p.disp = p.carga < p.max; }
     });
-    o.peritos=[...f.peritosSeleccionados]; o.fhi=f.fechaHoraInforme; o.nroIT=f.nroInformeTecnico||null;
-    if(o.estado==='pendiente')o.estado='en-proceso';
+    o.peritos=[...f.peritosSeleccionados]; o.fhi=f.fechaHoraInforme;
     o.peritos.forEach(newPName => {
        const p = S.peritos.find(x => x.nombre === newPName);
        if(p) { p.carga++; p.disp = p.carga < p.max; }
     });
-    const td=todayStr();
-    o.hist.push({f:td+' '+timeStr(),e:'Asignado a: '+f.peritosSeleccionados.join(', ')+'. Apertura: '+fmtDT(f.fechaHoraInforme),u:S.user?.name||'Sistema',c:'#D97706'});
-    if(f.nroInformeTecnico)o.hist.push({f:td+' '+timeStr(),e:'N\u00b0 informe t\u00e9cnico asignado: '+f.nroInformeTecnico,u:S.user?.name||'Sistema',c:'#16A34A'});
   }
-  closeM();S.successMsg='Asignaci\u00f3n guardada para '+f.solicitudId;nav(S.screen);
+  closeM();
+  S.successMsg = `Asignación guardada para ${prefijo}${f.solicitudId}`;
+  nav(S.screen);
 }

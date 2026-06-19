@@ -1,18 +1,17 @@
-<div id="mesa-alert-container"></div>
 <div class="page-header" id="mesa-header"></div>
 <div class="filter-row">
     <div class="search-wrap">
         <span class="si">
             <span data-ic="search" data-size="15"></span>
         </span>
-        <input type="text" id="mesa-search" placeholder="Buscar por N° solicitud, expediente, imputado, fiscal, jurisdicción..." oninput="upMS(this.value)">
+        <input type="text" id="mesa-search" placeholder="Buscar por N° de Legajo de Causa, N° interno, fiscal, imputado/a, víctima, perito..." oninput="upMS(this.value)">
     </div>
     <div id="mesa-filters" style="display: contents;"></div>
 </div>
 <div class="card" style="margin-bottom:0;">
     <div class="table-wrap">
         <table>
-            <thead><tr><th>N° Solicitud</th><th>Expediente</th><th>Imputado/a</th><th>Delito</th><th>Fiscal</th><th>Jurisdicción</th><th>Ingreso</th><th>Vencimiento</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
+            <thead><tr><th>N° Interno</th><th>N° de Legajo de Causa</th><th>Imputado/a</th><th>Delito</th><th>Fiscal</th><th>Jurisdicción</th><th>Ingreso</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
             <tbody id="mesa-tbody"></tbody>
         </table>
     </div>

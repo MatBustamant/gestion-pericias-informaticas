@@ -198,10 +198,6 @@ tbody tr:hover { background: #F0F6FF; }
 .perito-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 .perito-item:last-child { border-bottom: none; }
 .perito-av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 700; }
-.pb-wrap { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
-.pb-track { flex: 1; height: 4px; background: var(--muted); border-radius: 2px; overflow: hidden; }
-.pb-fill { height: 100%; border-radius: 2px; }
-.av-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .solicitud-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; transition: border-color .2s; }
 .solicitud-card.confirmed { border-color: #6EE7B7; box-shadow: 0 0 0 1px #6EE7B7; }
 .solicitud-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }

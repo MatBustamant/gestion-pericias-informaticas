@@ -119,7 +119,12 @@ function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
 function mBack(){S.modalStep=1; updateModalData(); } // Acá tampoco
 function toggleP(nombre){if(!S.aForm.peritosSeleccionados)S.aForm.peritosSeleccionados=[];const i=S.aForm.peritosSeleccionados.indexOf(nombre);if(i>=0)S.aForm.peritosSeleccionados.splice(i,1);else S.aForm.peritosSeleccionados.push(nombre); updateModalData(); }
-
+window.removePerito = function(nombre) {
+    if (S.aForm.peritosSeleccionados) {
+        S.aForm.peritosSeleccionados = S.aForm.peritosSeleccionados.filter(p => p !== nombre);
+        updateModalData();
+    }
+};
 // Esta función carga el esqueleto estático del modal desde la caché
 function rmModal() {
     const e = document.getElementById('moverlay');
@@ -195,20 +200,45 @@ function updateModalData() {
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
 
-        // Renderizar lista de checkboxes
-        document.getElementById('am-peritos-group').innerHTML = dp.map(p => {
-            const sel = (f.peritosSeleccionados || []).includes(p.nombre);
-            return `<div class="check-item ${sel ? 'checked' : ''}" onclick="toggleP('${p.nombre}')">
-                        <div class="check-box">${sel ? ic('check', 10, 'white') : ''}</div>
-                        <div style="flex:1;">
-                            <div style="font-weight:500;">${esc(p.nombre)}</div>
-                            <div style="font-size:11px; color:var(--muted-fg);">${esc(p.esp)} · Carga actual: ${p.carga}/${p.max}</div>
-                        </div>
-                    </div>`;
-        }).join('');
+        // 1. Poblar el <datalist> dinámicamente con los peritos disponibles
+        const datalist = document.getElementById('dl-peritos');
+        if (datalist) {
+            datalist.innerHTML = dp.map(p => `<option value="${p.nombre}">${p.esp}</option>`).join('');
+        }
 
-        const selCount = (f.peritosSeleccionados || []).length;
-        document.getElementById('am-selected-lbl').innerText = selCount > 0 ? `Seleccionados: ${(f.peritosSeleccionados).join(', ')}` : '';
+        // 2. Renderizar los peritos que ya están seleccionados como Etiquetas (Tags)
+        const tagsContainer = document.getElementById('am-selected-tags');
+        if (tagsContainer) {
+            tagsContainer.innerHTML = (f.peritosSeleccionados || []).map(pName => {
+                return `<div style="background:var(--primary); color:white; padding:4px 10px; border-radius:12px; font-size:12px; display:flex; align-items:center; gap:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    ${esc(pName)}
+                    <span style="cursor:pointer; font-weight:bold; font-size:14px; opacity:0.8;" onclick="removePerito('${pName}')" title="Quitar">×</span>
+                </div>`;
+            }).join('');
+        }
+
+        // 3. Escuchar cuando el usuario selecciona un nombre del datalist
+        const searchInput = document.getElementById('am-perito-search');
+        if (searchInput && !searchInput.dataset.listener) {
+            searchInput.dataset.listener = "true"; // Evita crear el listener múltiples veces
+            
+            searchInput.addEventListener('change', function(e) {
+                const val = e.target.value.trim();
+                const exists = dp.some(p => p.nombre === val);
+                
+                if (exists) {
+                    if (!f.peritosSeleccionados) f.peritosSeleccionados = [];
+                    // Si el perito no estaba en la lista, lo agregamos
+                    if (!f.peritosSeleccionados.includes(val)) {
+                        f.peritosSeleccionados.push(val);
+                        e.target.value = ''; // Limpiamos el input
+                        updateModalData(); // RE-RENDERIZA TODO (Etiquetas y Calendario)
+                    } else {
+                        e.target.value = ''; // Ya estaba seleccionado, solo limpiamos el input
+                    }
+                }
+            });
+        }
 
         // --- CÁLCULO DE CONFLICTOS Y ACTUALIZACIÓN REACTIVA DE AGENDA ---
         let overlappingIds = [];

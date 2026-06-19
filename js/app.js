@@ -195,21 +195,56 @@ function updateModalData() {
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
 
-        // Renderizar lista de selección de peritos
+        // Renderizar lista de checkboxes
         document.getElementById('am-peritos-group').innerHTML = dp.map(p => {
             const sel = (f.peritosSeleccionados || []).includes(p.nombre);
-            return `
-                <div class="check-item ${sel ? 'checked' : ''}" onclick="toggleP('${p.nombre}')">
-                    <div class="check-box">${sel ? ic('check', 10, 'white') : ''}</div>
-                    <div style="flex:1;">
-                        <div style="font-weight:500;">${esc(p.nombre)}</div>
-                        <div style="font-size:11px; color:var(--muted-fg);">${esc(p.esp)} · Carga actual: ${p.carga}/${p.max}</div>
-                    </div>
-                </div>`;
+            return `<div class="check-item ${sel ? 'checked' : ''}" onclick="toggleP('${p.nombre}')">
+                        <div class="check-box">${sel ? ic('check', 10, 'white') : ''}</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:500;">${esc(p.nombre)}</div>
+                            <div style="font-size:11px; color:var(--muted-fg);">${esc(p.esp)} · Carga actual: ${p.carga}/${p.max}</div>
+                        </div>
+                    </div>`;
         }).join('');
 
         const selCount = (f.peritosSeleccionados || []).length;
         document.getElementById('am-selected-lbl').innerText = selCount > 0 ? `Seleccionados: ${(f.peritosSeleccionados).join(', ')}` : '';
+
+        // --- CÁLCULO DE CONFLICTOS Y ACTUALIZACIÓN REACTIVA DE AGENDA ---
+        let overlappingIds = [];
+        const conflictDiv = document.getElementById('am-conflict-warning');
+        
+        if (f.fechaHoraInforme && f.peritosSeleccionados && f.peritosSeleccionados.length > 0) {
+            const targetDate = f.fechaHoraInforme.split('T')[0];
+            const overlapping = S.solicitudes.filter(x =>
+                x.id !== f.solicitudId && x.estado !== 'resuelto' &&
+                x.fhi && x.fhi.startsWith(targetDate) &&
+                x.peritos.some(p => f.peritosSeleccionados.includes(p))
+            );
+
+            if (overlapping.length > 0) {
+                overlappingIds = overlapping.map(x => x.id);
+                conflictDiv.innerHTML = `<div class="alert alert-warning" style="margin-bottom:16px; border-color:#EF4444; background:#FEF2F2; color:#991B1B;">
+                    ${ic('alertC', 16, '#EF4444')}
+                    <div><strong>¡Conflicto de Agenda Detectado!</strong><br>
+                    Peritos ocupados en esta fecha:
+                    <ul style="margin-top:4px; margin-bottom:0; padding-left:20px;">
+                        ${overlapping.map(ov => `<li style="font-size:12px;"><strong>${ov.fhi.split('T')[1]} hs</strong> - Exp. ${ov.exp}</li>`).join('')}
+                    </ul>
+                    </div>
+                </div>`;
+            } else {
+                conflictDiv.innerHTML = '';
+            }
+        } else if (conflictDiv) {
+            conflictDiv.innerHTML = '';
+        }
+
+        // Inyectar el calendario lateral pasándole los peritos a filtrar y las IDs conflictivas
+        const calContainer = document.getElementById('am-calendar-container');
+        if (calContainer) {
+            calContainer.innerHTML = buildCalendarHTML(overlappingIds);
+        }
     }
 }
 

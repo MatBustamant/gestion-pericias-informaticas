@@ -63,3 +63,81 @@ function bdg(e){const m={pendiente:'bp',['en-proceso']:'bi',resuelto:'br'};const
 function ubdg(u){const m={alta:'bu-a',media:'bu-m',baja:'bu-b'};return '<span class="badge '+(m[u]||'bu-m')+'">'+u.charAt(0).toUpperCase()+u.slice(1)+'</span>';}
 function pbcol(c,m){const p=c/m;return p>=1?'#DC2626':p>=.75?'#D97706':'#16A34A';}
 function screenLbl(){const s=S.screen==='detalle-causa'?'causas':S.screen;return (NAV.find(n=>n.id===s)||{lbl:'Detalle'}).lbl;}
+
+window.chgMonth = function(d) {
+    S.cal.month += d;
+    if(S.cal.month > 11) { S.cal.month = 0; S.cal.year++; }
+    if(S.cal.month < 0) { S.cal.month = 11; S.cal.year--; }
+    
+    // Disparadores reactivos según la pantalla actual
+    if(S.screen === 'dashboard' && window.init_dashboard) init_dashboard();
+    if(S.screen === 'asignacion' && window.init_asignacion) init_asignacion();
+    
+    // NUEVA LÓGICA: Si hay un modal abierto, forzamos su actualización
+    if(S.modal) updateModalData();
+};
+
+// Se elimina el parámetro selectedPeritos, ahora solo recibe conflictIds
+window.buildCalendarHTML = function(conflictIds = []) {
+    const y = S.cal.year, m = S.cal.month;
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    let events = {};
+    S.solicitudes.forEach(o => {
+        if(o.fhi && o.estado !== 'resuelto') {
+            // ELIMINADO: Ya no se filtra por perito seleccionado. 
+            // Se procesan TODAS las aperturas.
+            const d = new Date(o.fhi);
+            if(d.getFullYear() === y && d.getMonth() === m) {
+                const day = d.getDate();
+                if(!events[day]) events[day] = [];
+                events[day].push(o);
+            }
+        }
+    });
+
+    let html = `<div class="cal-header">
+        <button class="btn-icon" onclick="chgMonth(-1)">${ic('arrowL', 14)}</button>
+        <div style="font-weight:600; font-size:14px;">${monthNames[m]} ${y}</div>
+        <button class="btn-icon" onclick="chgMonth(1)" style="transform:rotate(180deg)">${ic('arrowL', 14)}</button>
+    </div>
+    <div class="cal-grid" style="height: calc(100% - 45px); flex:1;">
+        <div class="cal-dow">Dom</div><div class="cal-dow">Lun</div><div class="cal-dow">Mar</div>
+        <div class="cal-dow">Mié</div><div class="cal-dow">Jue</div><div class="cal-dow">Vie</div><div class="cal-dow">Sáb</div>`;
+
+    for(let i = 0; i < firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
+
+    for(let i = 1; i <= daysInMonth; i++) {
+        let evHTML = '';
+        let bgClass = 'cal-bg-gray'; 
+        
+        if(events[i]) {
+            const count = events[i].length;
+            if(count === 1) bgClass = 'cal-bg-green';
+            else if(count === 2) bgClass = 'cal-bg-yellow';
+            else bgClass = 'cal-bg-red'; 
+
+            evHTML = events[i].map(e => {
+                const colorCls = e.urgencia === 'alta' ? 'c-ev-alta' : (e.urgencia === 'media' ? 'c-ev-media' : 'c-ev-baja');
+                const expertName = e.peritos.length > 0 ? e.peritos[0].split(' ')[0] : 'S/A';
+                const time = e.fhi.split('T')[1];
+                
+                // Mantenemos la alerta visual si el ID de la solicitud es conflictivo
+                const isConflict = conflictIds && conflictIds.includes(e.id) ? ' conflict' : '';
+                
+                return `<div class="cal-event ${colorCls}${isConflict}" title="${e.peritos.join(', ')} - Exp. ${e.exp}">
+                    <strong>${time}</strong> ${expertName}
+                </div>`;
+            }).join('');
+        }
+
+        html += `<div class="cal-day ${bgClass}">
+            <div class="cal-date">${i}</div>
+            <div class="cal-ev-wrap">${evHTML}</div>
+        </div>`;
+    }
+    html += `</div>`;
+    return html;
+};

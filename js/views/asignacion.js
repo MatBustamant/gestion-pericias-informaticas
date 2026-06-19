@@ -32,4 +32,6 @@ window.init_asignacion = function() {
     '<div class="solicitud-foot"><span style="font-size:12px;font-weight:500;color:var(--muted-fg);">Perito/s:</span>'+(o.peritos.length>0?o.peritos.map(p=>'<span class="assigned-chip">'+ic('user',11,'var(--primary)')+' '+esc(p)+'</span>').join(''):'<span style="font-size:13px;color:var(--muted-fg);">Sin asignar</span>')+
     '<div style="margin-left:auto;display:flex;gap:8px;">'+(!g?'<button class="btn btn-primary btn-sm" onclick="openAM(\''+o.id+'\')">'+ic(o.peritos.length>0?'edit':'users',13,'white')+' '+(o.peritos.length>0?'Editar':'Asignar')+'</button>':'')+(!g&&o.peritos.length>0?'<button class="btn btn-success btn-sm" onclick="confirmAsig(\''+o.id+'\')">'+ic('check',13,'white')+' Confirmar</button>':'')+'</div></div></div>';
   }).join('');
+  const calPanel = document.getElementById('asig-calendar-panel');
+    if (calPanel) calPanel.innerHTML = buildCalendarHTML();
 };

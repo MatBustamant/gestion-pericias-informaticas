@@ -78,7 +78,7 @@ window.chgMonth = function(d) {
 };
 
 // Se elimina el parámetro selectedPeritos, ahora solo recibe conflictIds
-window.buildCalendarHTML = function(conflictIds = []) {
+window.buildCalendarHTML = function(conflictIds = [], tentativeEvent = null) {
     const y = S.cal.year, m = S.cal.month;
     const firstDay = new Date(y, m, 1).getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
@@ -87,8 +87,6 @@ window.buildCalendarHTML = function(conflictIds = []) {
     let events = {};
     S.solicitudes.forEach(o => {
         if(o.fhi && o.estado !== 'resuelto') {
-            // ELIMINADO: Ya no se filtra por perito seleccionado. 
-            // Se procesan TODAS las aperturas.
             const d = new Date(o.fhi);
             if(d.getFullYear() === y && d.getMonth() === m) {
                 const day = d.getDate();
@@ -113,24 +111,39 @@ window.buildCalendarHTML = function(conflictIds = []) {
         let evHTML = '';
         let bgClass = 'cal-bg-gray'; 
         
-        if(events[i]) {
-            const count = events[i].length;
+        // Comprobar si el evento tentativo coincide con este día
+        const currentDateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const hasTentative = tentativeEvent && tentativeEvent.date === currentDateStr;
+        
+        let dayEvents = events[i] ? [...events[i]] : [];
+        
+        if(dayEvents.length > 0 || hasTentative) {
+            // Ajustamos el color de fondo considerando el evento tentativo
+            const count = dayEvents.length + (hasTentative ? 1 : 0);
             if(count === 1) bgClass = 'cal-bg-green';
             else if(count === 2) bgClass = 'cal-bg-yellow';
             else bgClass = 'cal-bg-red'; 
 
-            evHTML = events[i].map(e => {
+            evHTML = dayEvents.map(e => {
                 const colorCls = e.urgencia === 'alta' ? 'c-ev-alta' : (e.urgencia === 'media' ? 'c-ev-media' : 'c-ev-baja');
                 const expertName = e.peritos.length > 0 ? e.peritos[0].split(' ')[0] : 'S/A';
                 const time = e.fhi.split('T')[1];
-                
-                // Mantenemos la alerta visual si el ID de la solicitud es conflictivo
                 const isConflict = conflictIds && conflictIds.includes(e.id) ? ' conflict' : '';
                 
                 return `<div class="cal-event ${colorCls}${isConflict}" title="${e.peritos.join(', ')} - Exp. ${e.exp}">
                     <strong>${time}</strong> ${expertName}
                 </div>`;
             }).join('');
+
+            // Inyectar el evento Borrador/Tentativo visualmente distinto
+            if (hasTentative) {
+                const expertName = tentativeEvent.peritos[0].split(' ')[0];
+                const extraLabel = tentativeEvent.peritos.length > 1 ? ` (+${tentativeEvent.peritos.length - 1})` : '';
+                
+                evHTML += `<div class="cal-event" style="background:#EFF6FF; border: 1px dashed #3B82F6; border-left: 3px solid #3B82F6; color:#1D4ED8;" title="Borrador de asignación: ${tentativeEvent.peritos.join(', ')}">
+                    <strong>${tentativeEvent.time}</strong> ${expertName}${extraLabel} (Nuevo)
+                </div>`;
+            }
         }
 
         html += `<div class="cal-day ${bgClass}">

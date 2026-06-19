@@ -20,12 +20,12 @@ window.init_asignacion = function() {
         // Obtenemos las iniciales para el avatar
         const ini = p.nombre.split(' ').map(n => n[0]).join('');
         
-        return `<div class="card" style="display:flex; align-items:center; gap:12px; padding:12px;">
-            <div style="width:40px; height:40px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--muted-fg); font-size:14px;">
+        return `<div class="perito-item" style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:50%; background:var(--secondary); display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--primary); font-size:14px;">
                 ${ini}
             </div>
             <div style="flex:1;">
-                <div style="font-weight:600; font-size:14px;">${esc(p.nombre)}</div>
+                <div style="font-weight:600; font-size:14px; color:var(--fg);">${esc(p.nombre)}</div>
                 <div style="font-size:12px; color:var(--muted-fg); margin-top:2px;">${esc(p.esp)}</div>
             </div>
         </div>`;

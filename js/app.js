@@ -270,10 +270,20 @@ function updateModalData() {
             conflictDiv.innerHTML = '';
         }
 
-        // Inyectar el calendario lateral pasándole los peritos a filtrar y las IDs conflictivas
+        let tentativeEvent = null;
+        if (f.fechaHoraInforme && f.peritosSeleccionados && f.peritosSeleccionados.length > 0) {
+            const [datePart, timePart] = f.fechaHoraInforme.split('T');
+            tentativeEvent = {
+                date: datePart, // YYYY-MM-DD
+                time: timePart, // HH:MM
+                peritos: f.peritosSeleccionados
+            };
+        }
+
+        // MODIFICADO: Inyectar el calendario lateral pasándole las IDs conflictivas Y el evento tentativo
         const calContainer = document.getElementById('am-calendar-container');
         if (calContainer) {
-            calContainer.innerHTML = buildCalendarHTML(overlappingIds);
+            calContainer.innerHTML = buildCalendarHTML(overlappingIds, tentativeEvent);
         }
     }
 }

@@ -73,7 +73,9 @@ function updateShell() {
     document.getElementById('sb-user-role').innerText = u.lbl;
 
     // 3. Topbar: Título y Breadcrumbs
-    document.getElementById('tb-screen-name').innerText = screenLbl();
+    const screenNameEl = document.getElementById('tb-screen-name');
+    screenNameEl.innerText = screenLbl();
+    
     const sep = document.getElementById('tb-detail-separator');
     const idEl = document.getElementById('tb-detail-id');
     
@@ -84,9 +86,18 @@ function updateShell() {
         sep.style.display = 'flex';
         idEl.style.display = 'block';
         idEl.innerText = prefijo + S.detailId;
+        
+        screenNameEl.style.cursor = 'pointer';
+        screenNameEl.style.color = 'var(--muted-fg)';
+        screenNameEl.onclick = () => nav('causas'); 
+        
     } else {
         sep.style.display = 'none';
         idEl.style.display = 'none';
+        
+        screenNameEl.style.cursor = 'default';
+        screenNameEl.style.color = '';
+        screenNameEl.onclick = null;
     }
 }
 

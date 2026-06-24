@@ -303,8 +303,7 @@ function saveOficio(){
   const f=S.form;
   if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
   const id=genId(f.tipo);
-  const td=todayStr();
-  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,fhi:null,peritos:[]});
+  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
   closeM();
   S.successMsg = `Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`;
   nav(S.screen);

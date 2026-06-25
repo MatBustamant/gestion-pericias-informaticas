@@ -211,10 +211,10 @@ function updateModalData() {
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
 
-        // 1. Poblar el <datalist> dinámicamente con los peritos disponibles
+        // 1. Poblar el <datalist> dinámicamente con los peritos registrados
         const datalist = document.getElementById('dl-peritos');
         if (datalist) {
-            datalist.innerHTML = p.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+            datalist.innerHTML = p.map(peri => `<option value="${peri.nombre}">${peri.nombre}</option>`).join('');
         }
 
         // 2. Renderizar los peritos que ya están seleccionados como Etiquetas (Tags)
@@ -235,7 +235,7 @@ function updateModalData() {
             
             searchInput.addEventListener('change', function(e) {
                 const val = e.target.value.trim();
-                const exists = p.some(p => p.nombre === val);
+                const exists = p.some(peri => peri.nombre === val);
                 
                 if (exists) {
                     if (!f.peritosSeleccionados) f.peritosSeleccionados = [];

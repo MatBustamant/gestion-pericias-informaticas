@@ -26,7 +26,6 @@ window.init_asignacion = function() {
             </div>
             <div style="flex:1;">
                 <div style="font-weight:600; font-size:14px; color:var(--fg);">${esc(p.nombre)}</div>
-                <div style="font-size:12px; color:var(--muted-fg); margin-top:2px;">${esc(p.esp)}</div>
             </div>
         </div>`;
     }).join('');

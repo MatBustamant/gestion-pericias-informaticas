@@ -214,7 +214,7 @@ function updateModalData() {
         // 1. Poblar el <datalist> dinámicamente con los peritos disponibles
         const datalist = document.getElementById('dl-peritos');
         if (datalist) {
-            datalist.innerHTML = dp.map(p => `<option value="${p.nombre}">${p.esp}</option>`).join('');
+            datalist.innerHTML = dp.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
         }
 
         // 2. Renderizar los peritos que ya están seleccionados como Etiquetas (Tags)

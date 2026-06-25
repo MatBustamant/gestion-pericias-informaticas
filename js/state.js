@@ -8,11 +8,11 @@ const S = {
 };
 
 S.peritos = [
-  {id:1,nombre:'Laura Su\u00e1rez',ini:'LS',carga:3,max:6,disp:true},
-  {id:2,nombre:'Mat\u00edas Herrera',ini:'MH',carga:5,max:6,disp:true},
-  {id:3,nombre:'Ver\u00f3nica Castro',ini:'VC',carga:6,max:6,disp:false},
+  {id:1,nombre:'Laura Suárez',ini:'LS',carga:3,max:6,disp:true},
+  {id:2,nombre:'Matías Herrera',ini:'MH',carga:5,max:6,disp:true},
+  {id:3,nombre:'Verónica Castro',ini:'VC',carga:6,max:6,disp:false},
   {id:4,nombre:'Diego Romero',ini:'DR',carga:2,max:6,disp:true},
-  {id:5,nombre:'Claudia R\u00edos',ini:'CR',carga:4,max:6,disp:true},
+  {id:5,nombre:'Claudia Ríos',ini:'CR',carga:4,max:6,disp:true},
   {id:6,nombre:'Ignacio Palma',ini:'IP',carga:1,max:6,disp:true},
 ];
 

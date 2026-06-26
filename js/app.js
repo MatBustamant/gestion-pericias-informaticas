@@ -90,6 +90,7 @@ function updateShell() {
         screenNameEl.style.color = '';
         screenNameEl.onclick = null;
     }
+    renderNotifBadge();
 }
 
 function toggleSB(){S.sidebarOpen=!S.sidebarOpen;const sb=document.getElementById('sidebar');if(sb){sb.classList.toggle('open',S.sidebarOpen);sb.classList.toggle('closed',!S.sidebarOpen);}}
@@ -328,4 +329,57 @@ async function saveAsig(){
   showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
   await DB.saveSolicitudes();
   nav(S.screen);
+}
+
+function renderNotifBadge() {
+    const dot = document.getElementById('notif-dot');
+    if (!dot) return;
+    const readIds = S.notifLeidas[S.user?.username] || [];
+    const unread = S.solicitudes.filter(s =>
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
+    );
+    dot.style.display = unread.length > 0 ? '' : 'none';
+}
+
+function toggleNotifPanel() {
+    const dd = document.getElementById('notif-dropdown');
+    if (!dd) return;
+    const isOpen = dd.style.display === 'block';
+    dd.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) {
+        renderNotifDropdown();
+        markNotifAsRead();
+    }
+}
+
+function renderNotifDropdown() {
+    const dd = document.getElementById('notif-dropdown');
+    if (!dd) return;
+    const readIds = S.notifLeidas[S.user?.username] || [];
+    const pendientes = S.solicitudes.filter(s =>
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
+    );
+    if (pendientes.length === 0) {
+        dd.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted-fg);font-size:13px;">Sin notificaciones</div>';
+        return;
+    }
+    dd.innerHTML = pendientes.map(s => `
+        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id}'); document.getElementById('notif-dropdown').style.display='none';">
+            <div style="font-size:13px;font-weight:500;">Se le ha asignado una nueva solicitud</div>
+            <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">N.º de Legajo de Causa ${esc(s.exp)}</div>
+        </div>
+    `).join('');
+}
+
+async function markNotifAsRead() {
+    const username = S.user?.username;
+    if (!username) return;
+    const readIds = S.notifLeidas[username] || [];
+    const unread = S.solicitudes.filter(s =>
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
+    );
+    if (unread.length === 0) return;
+    S.notifLeidas[username] = [...readIds, ...unread.map(s => s.id)];
+    await DB.saveNotifLeidas();
+    renderNotifBadge();
 }

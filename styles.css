@@ -360,3 +360,11 @@ tbody tr:hover { background: #F0F6FF; }
     70% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); } 
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } 
 }
+
+/* Panel de notificaciones */
+.notif-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 340px; max-height: 400px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 1000; display: none; }
+.notif-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #F9FAFB; }
+.notif-item.unread { background: #EFF6FF; }
+.notif-item.unread:hover { background: #DBEAFE; }

@@ -5,11 +5,9 @@ const DB = {
     const solicitudes = this._load('solicitudes');
     if (solicitudes) {
       S.solicitudes = solicitudes;
-      S.asigGuardados = new Set(this._load('asigGuardados', []));
       S.idCounters = this._load('idCounters', { general: 249, narco: 1 });
     } else {
       this._save('solicitudes', S.solicitudes);
-      this._save('asigGuardados', [...S.asigGuardados]);
       this._save('idCounters', S.idCounters);
     }
     const users = this._load('users');
@@ -21,6 +19,7 @@ const DB = {
         }
         this._save('users', S.users);
     }
+    S.notifLeidas = this._load('notifLeidas', {});
   },
 
   _load(key, def = null) {
@@ -30,10 +29,10 @@ const DB = {
   _save(key, val) { localStorage.setItem(this._prefix + key, JSON.stringify(val)); },
 
   async saveSolicitudes()   { this._save('solicitudes', S.solicitudes); },
-  async saveAsigGuardados() { this._save('asigGuardados', [...S.asigGuardados]); },
   async saveIdCounters()    { this._save('idCounters', S.idCounters); },
   async saveUsers() { this._save('users', S.users); },
   async saveSession(user) { this._save('session', { username: user.username }); },
   async loadSession() { return this._load('session', null); },
   async clearSession() { localStorage.removeItem(this._prefix + 'session'); },
+  async saveNotifLeidas() { this._save('notifLeidas', S.notifLeidas); },  
 };

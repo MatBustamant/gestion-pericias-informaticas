@@ -354,7 +354,7 @@ function renderNotifBadge() {
 function toggleNotifPanel() {
     const dd = document.getElementById('notif-dropdown');
     if (!dd) return;
-    const isOpen = dd.style.display !== 'none';
+    const isOpen = dd.style.display === 'block';
     dd.style.display = isOpen ? 'none' : 'block';
     if (!isOpen) {
         renderNotifDropdown();

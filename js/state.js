@@ -8,12 +8,12 @@ const S = {
 };
 
 S.peritos = [
-  {id:1,nombre:'Laura Su\u00e1rez',esp:'An\u00e1lisis forense digital',ini:'LS',carga:3,max:6,disp:true},
-  {id:2,nombre:'Mat\u00edas Herrera',esp:'Extracci\u00f3n de datos m\u00f3viles',ini:'MH',carga:5,max:6,disp:true},
-  {id:3,nombre:'Ver\u00f3nica Castro',esp:'Redes y comunicaciones',ini:'VC',carga:6,max:6,disp:false},
-  {id:4,nombre:'Diego Romero',esp:'An\u00e1lisis forense digital',ini:'DR',carga:2,max:6,disp:true},
-  {id:5,nombre:'Claudia R\u00edos',esp:'Fraude electr\u00f3nico',ini:'CR',carga:4,max:6,disp:true},
-  {id:6,nombre:'Ignacio Palma',esp:'Extracci\u00f3n de datos m\u00f3viles',ini:'IP',carga:1,max:6,disp:true},
+  {id:1,nombre:'Laura Suárez',ini:'LS'},
+  {id:2,nombre:'Matías Herrera',ini:'MH'},
+  {id:3,nombre:'Verónica Castro',ini:'VC'},
+  {id:4,nombre:'Diego Romero',ini:'DR'},
+  {id:5,nombre:'Claudia Ríos',ini:'CR'},
+  {id:6,nombre:'Ignacio Palma',ini:'IP'},
 ];
 
 S.solicitudes = [

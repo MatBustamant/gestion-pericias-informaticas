@@ -206,15 +206,15 @@ function updateModalData() {
     else if (S.modal === 'asignar-perito') {
         const f = S.aForm;
         const o = S.solicitudes.find(x => x.id === f.solicitudId);
-        const dp = S.peritos.filter(p => p.disp);
+        const p = S.peritos;
 
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
 
-        // 1. Poblar el <datalist> dinámicamente con los peritos disponibles
+        // 1. Poblar el <datalist> dinámicamente con los peritos registrados
         const datalist = document.getElementById('dl-peritos');
         if (datalist) {
-            datalist.innerHTML = dp.map(p => `<option value="${p.nombre}">${p.esp}</option>`).join('');
+            datalist.innerHTML = p.map(peri => `<option value="${peri.nombre}">${peri.nombre}</option>`).join('');
         }
 
         // 2. Renderizar los peritos que ya están seleccionados como Etiquetas (Tags)
@@ -235,7 +235,7 @@ function updateModalData() {
             
             searchInput.addEventListener('change', function(e) {
                 const val = e.target.value.trim();
-                const exists = dp.some(p => p.nombre === val);
+                const exists = p.some(peri => peri.nombre === val);
                 
                 if (exists) {
                     if (!f.peritosSeleccionados) f.peritosSeleccionados = [];
@@ -316,15 +316,8 @@ function saveAsig(){
   const o=S.solicitudes.find(x=>x.id===f.solicitudId);
   const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
   if(o){
-    o.peritos.forEach(oldPName => {
-       const p = S.peritos.find(x => x.nombre === oldPName);
-       if(p && p.carga > 0) { p.carga--; p.disp = p.carga < p.max; }
-    });
-    o.peritos=[...f.peritosSeleccionados]; o.fhi=f.fechaHoraInforme;
-    o.peritos.forEach(newPName => {
-       const p = S.peritos.find(x => x.nombre === newPName);
-       if(p) { p.carga++; p.disp = p.carga < p.max; }
-    });
+    o.peritos=[...f.peritosSeleccionados];
+    o.fhi=f.fechaHoraInforme;
   }
   closeM();
   S.successMsg = `Asignación guardada para ${prefijo}${f.solicitudId}`;

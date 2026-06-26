@@ -15,18 +15,14 @@ window.init_asignacion = function() {
   const pend=S.solicitudes.filter(o=>o.estado!=='resuelto');
   document.getElementById('asig-header').innerHTML = '<div><div class="page-title">Asignaci\u00f3n de Peritos</div><div class="page-sub">'+S.solicitudes.filter(o=>o.peritos.length===0&&o.estado==='pendiente').length+' solicitudes pendientes de asignación</div></div>';
   
-  const cols=['#1B3A6B','#0EA5E9','#DC2626','#10B981','#D97706','#7C3AED'];
   document.getElementById('asig-peritos').innerHTML = S.peritos.map(p => {
-        // Obtenemos las iniciales para el avatar
-        const ini = p.nombre.split(' ').map(n => n[0]).join('');
         
         return `<div class="perito-item" style="display:flex; align-items:center; gap:12px;">
             <div style="width:40px; height:40px; border-radius:50%; background:var(--secondary); display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--primary); font-size:14px;">
-                ${ini}
+                ${esc(p.ini)}
             </div>
             <div style="flex:1;">
                 <div style="font-weight:600; font-size:14px; color:var(--fg);">${esc(p.nombre)}</div>
-                <div style="font-size:12px; color:var(--muted-fg); margin-top:2px;">${esc(p.esp)}</div>
             </div>
         </div>`;
     }).join('');

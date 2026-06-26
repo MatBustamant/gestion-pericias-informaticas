@@ -21,6 +21,10 @@ const DB = {
         }
         this._save('users', S.users);
     }
+    const notifs = this._load('notifications');
+    if (!notifs) {
+        this._save('notifications', []);
+    }
   },
 
   _load(key, def = null) {
@@ -36,4 +40,5 @@ const DB = {
   async saveSession(user) { this._save('session', { username: user.username }); },
   async loadSession() { return this._load('session', null); },
   async clearSession() { localStorage.removeItem(this._prefix + 'session'); },
+  async saveNotifications() { this._save('notifications', S.notifications); },  
 };

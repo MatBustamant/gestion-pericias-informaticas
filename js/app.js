@@ -90,6 +90,7 @@ function updateShell() {
         screenNameEl.style.color = '';
         screenNameEl.onclick = null;
     }
+    renderNotifBadge();
 }
 
 function toggleSB(){S.sidebarOpen=!S.sidebarOpen;const sb=document.getElementById('sidebar');if(sb){sb.classList.toggle('open',S.sidebarOpen);sb.classList.toggle('closed',!S.sidebarOpen);}}
@@ -327,5 +328,70 @@ async function saveAsig(){
   closeM();
   showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
   await DB.saveSolicitudes();
+  for (const pName of f.peritosSeleccionados) {
+      const pu = S.users.find(u => u.nombre === pName);
+      if (pu) {
+        S.notifications.unshift({
+            id: 'notif_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+            solicitudId: f.solicitudId,
+            username: pu.username,
+            read: false,
+            createdAt: new Date().toISOString()
+        });
+      }
+  }
+  await DB.saveNotifications();  
   nav(S.screen);
+}
+
+function renderNotifBadge() {
+    const dot = document.getElementById('notif-dot');
+    if (!dot) return;
+    const unread = S.notifications.filter(n => n.username === S.user?.username && !n.read);
+    dot.style.display = unread.length > 0 ? '' : 'none';
+}
+
+function toggleNotifPanel() {
+    const dd = document.getElementById('notif-dropdown');
+    if (!dd) return;
+    const isOpen = dd.style.display !== 'none';
+    dd.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) {
+        renderNotifDropdown();
+        markNotifAsRead();
+    }
+}
+
+function renderNotifDropdown() {
+    const dd = document.getElementById('notif-dropdown');
+    if (!dd) return;
+    const notifs = S.notifications.filter(n => n.username === S.user?.username);
+    if (notifs.length === 0) {
+        dd.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted-fg);font-size:13px;">Sin notificaciones</div>';
+        return;
+    }
+    dd.innerHTML = notifs.map(n => {
+        const sol = S.solicitudes.find(s => s.id === n.solicitudId);
+        const msg = `Se le ha asignado una nueva solicitud — Exp. ${sol?.exp || '—'}`;
+        return `
+            <div class="notif-item${n.read ? '' : ' unread'}" onclick="nav('detalle-causa','${n.solicitudId}'); document.getElementById('notif-dropdown').style.display='none';">
+                <div style="font-size:13px;font-weight:${n.read ? '400' : '500'};">${esc(msg)}</div>
+                <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">${fmtDT(n.createdAt)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function markNotifAsRead() {
+    let changed = false;
+    S.notifications.forEach(n => {
+        if (n.username === S.user?.username && !n.read) {
+            n.read = true;
+            changed = true;
+        }
+    });
+    if (changed) {
+        await DB.saveNotifications();
+        renderNotifBadge();
+    }
 }

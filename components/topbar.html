@@ -11,7 +11,10 @@
     </div>
     
     <div class="notif-wrap">
-        <button class="btn-icon"><span data-ic="bell" data-size="18"></span></button>
-        <span class="notif-dot"></span>
+        <button class="btn-icon" id="notif-bell" onclick="toggleNotifPanel()">
+            <span data-ic="bell" data-size="18"></span>
+        </button>
+        <span class="notif-dot" id="notif-dot"></span>
+        <div class="notif-dropdown" id="notif-dropdown"></div>
     </div>
 </header>

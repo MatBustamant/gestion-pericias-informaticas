@@ -13,8 +13,14 @@ const DB = {
       this._save('idCounters', S.idCounters);
     }
     const users = this._load('users');
-    if (users) S.users = users;
-    else this._save('users', S.users);
+    if (users) {
+        S.users = users;
+    } else {
+        for (const u of S.users) {
+            u.password = await hashPassword(u.password);
+        }
+        this._save('users', S.users);
+    }
   },
 
   _load(key, def = null) {

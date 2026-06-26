@@ -1,16 +1,25 @@
 // js/auth.js
-function setLR(r) {
-    S.loginRole = r;
-    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-    const idx = ['mesa', 'coordinador', 'perito'].indexOf(r);
-    if(document.querySelectorAll('.role-btn')[idx]) {
-        document.querySelectorAll('.role-btn')[idx].classList.add('active');
-    }
-}
+async function doLogin() {
+    const username = document.getElementById('username')?.value?.trim();
+    const password = document.getElementById('pwd')?.value;
 
-function doLogin() {
-    const user = S.users.find(u => u.rol === S.loginRole);
-    if (!user) return;
+    if (!username || !password) {
+        showToast('Completá usuario y contraseña', 'error');
+        return;
+    }
+
+    const user = S.users.find(u => u.username === username);
+    if (!user) {
+        showToast('Usuario o contraseña incorrectos', 'error');
+        return;
+    }
+
+    const hash = await hashPassword(password);
+    if (hash !== user.password) {
+        showToast('Usuario o contraseña incorrectos', 'error');
+        return;
+    }
+
     S.user = user;
     S.loggedIn = true;
     nav('dashboard');

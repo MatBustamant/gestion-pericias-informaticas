@@ -335,8 +335,7 @@ async function saveAsig(){
             id: 'notif_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
             solicitudId: f.solicitudId,
             username: pu.username,
-            read: false,
-            createdAt: new Date().toISOString()
+            read: false
         });
       }
   }
@@ -372,11 +371,11 @@ function renderNotifDropdown() {
     }
     dd.innerHTML = notifs.map(n => {
         const sol = S.solicitudes.find(s => s.id === n.solicitudId);
-        const msg = `Se le ha asignado una nueva solicitud — Exp. ${sol?.exp || '—'}`;
+        const msg = `Se le ha asignado una nueva solicitud`;
         return `
             <div class="notif-item${n.read ? '' : ' unread'}" onclick="nav('detalle-causa','${n.solicitudId}'); document.getElementById('notif-dropdown').style.display='none';">
                 <div style="font-size:13px;font-weight:${n.read ? '400' : '500'};">${esc(msg)}</div>
-                <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">${fmtDT(n.createdAt)}</div>
+                <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">N.º de Legajo de Causa ${sol?.exp || '—'}</div>
             </div>
         `;
     }).join('');

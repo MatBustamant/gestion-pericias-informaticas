@@ -22,12 +22,14 @@ async function doLogin() {
 
     S.user = user;
     S.loggedIn = true;
+    await DB.saveSession(user);
     nav('dashboard');
 }
 
-function logout() {
+async function logout() {
     S.loggedIn = false;
     S.user = null;
+    await DB.clearSession();
     nav('login');
 }
 

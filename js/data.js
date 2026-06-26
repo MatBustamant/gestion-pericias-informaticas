@@ -33,4 +33,7 @@ const DB = {
   async saveAsigGuardados() { this._save('asigGuardados', [...S.asigGuardados]); },
   async saveIdCounters()    { this._save('idCounters', S.idCounters); },
   async saveUsers() { this._save('users', S.users); },
+  async saveSession(user) { this._save('session', { username: user.username }); },
+  async loadSession() { return this._load('session', null); },
+  async clearSession() { localStorage.removeItem(this._prefix + 'session'); },
 };

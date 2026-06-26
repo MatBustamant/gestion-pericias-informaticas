@@ -106,7 +106,17 @@ async function initApp() {
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
 
         await DB.init();
-        
+
+        const session = await DB.loadSession();
+        if (session?.username) {
+            const user = S.users.find(u => u.username === session.username);
+            if (user) {
+                S.user = user;
+                S.loggedIn = true;
+                nav('dashboard');
+                return;
+            }
+        }
         nav('login');
     } catch (e) {
         console.error("Error cargando componentes base:", e);

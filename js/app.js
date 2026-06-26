@@ -104,6 +104,8 @@ async function initApp() {
         // ¡AGREGAMOS LAS DOS LÍNEAS PARA LOS MODALES!
         COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
+
+        await DB.init();
         
         nav('login');
     } catch (e) {
@@ -290,17 +292,19 @@ function updateModalData() {
     }
 }
 
-function saveOficio(){
+async function saveOficio(){
   const f=S.form;
   if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
   const id=genId(f.tipo);
   S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
   closeM();
   showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+  await DB.saveSolicitudes();
+  await DB.saveIdCounters();
   nav(S.screen);
 }
 
-function saveAsig(){
+async function saveAsig(){
   const f=S.aForm;
   if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
   if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
@@ -312,5 +316,6 @@ function saveAsig(){
   }
   closeM();
   showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
+  await DB.saveSolicitudes();
   nav(S.screen);
 }

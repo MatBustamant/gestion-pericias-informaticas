@@ -1,4 +1,4 @@
-window.confirmAsig = function(id) { 
+window.confirmAsig = async function(id) { 
     S.asigGuardados.add(id); 
     
     const o = S.solicitudes.find(x => x.id === id);
@@ -6,6 +6,9 @@ window.confirmAsig = function(id) {
     if (o && o.estado === 'pendiente') {
         o.estado = 'en-proceso';
     }
+
+    await DB.saveSolicitudes();
+    await DB.saveAsigGuardados();
     
     init_asignacion(); 
 };

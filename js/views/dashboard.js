@@ -1,7 +1,7 @@
 window.init_dashboard = function() {
   const r=S.user?.rol||'mesa';const u=S.user||{};
   let ofs = S.solicitudes;
-  if(r === 'perito') ofs = ofs.filter(o => o.peritos.includes(u.nombre));
+  if(r === 'perito') ofs = ofs.filter(o => o.peritos.includes(u.nombre) && o.estado !== 'pendiente');
 
   const pend=ofs.filter(o=>o.estado==='pendiente').length;
   const proc=ofs.filter(o=>o.estado==='en-proceso').length;

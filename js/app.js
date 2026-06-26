@@ -336,7 +336,7 @@ function renderNotifBadge() {
     if (!dot) return;
     const readIds = S.notifLeidas[S.user?.username] || [];
     const unread = S.solicitudes.filter(s =>
-        s.peritos.includes(S.user?.nombre) && !readIds.includes(s.id)
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
     );
     dot.style.display = unread.length > 0 ? '' : 'none';
 }
@@ -357,7 +357,7 @@ function renderNotifDropdown() {
     if (!dd) return;
     const readIds = S.notifLeidas[S.user?.username] || [];
     const pendientes = S.solicitudes.filter(s =>
-        s.peritos.includes(S.user?.nombre) && !readIds.includes(s.id)
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
     );
     if (pendientes.length === 0) {
         dd.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted-fg);font-size:13px;">Sin notificaciones</div>';
@@ -376,7 +376,7 @@ async function markNotifAsRead() {
     if (!username) return;
     const readIds = S.notifLeidas[username] || [];
     const unread = S.solicitudes.filter(s =>
-        s.peritos.includes(S.user?.nombre) && !readIds.includes(s.id)
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
     );
     if (unread.length === 0) return;
     S.notifLeidas[username] = [...readIds, ...unread.map(s => s.id)];

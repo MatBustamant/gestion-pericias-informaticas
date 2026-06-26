@@ -115,7 +115,7 @@ window.buildCalendarHTML = function(conflictIds = [], tentativeEvent = null) {
 
     let events = {};
     S.solicitudes.forEach(o => {
-        if(o.fhi && o.estado !== 'resuelto') {
+        if(o.fhi && o.estado === 'en-proceso') {
             const d = new Date(o.fhi);
             if(d.getFullYear() === y && d.getMonth() === m) {
                 const day = d.getDate();

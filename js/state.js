@@ -1,7 +1,7 @@
 /* ===== STATE & DATA ===== */
 const S = {
   loggedIn:false, user:null, screen:'login', sidebarOpen:true, loginRole:'mesa', detailId:null, detalleTab:'info',
-  mesaSearch:'', mesaFiltro:'todos', causasSearch:'', causasEstado:'todos', causasUrgencia:'todos', causasJurisdiccion:'todos', causasShowFilters:false,
+  mesaSearch:'', mesaEstado:'todos', mesaUrgencia:'todos', mesaJurisdiccion:'todos', mesaShowFilters:false, causasSearch:'', causasEstado:'todos', causasUrgencia:'todos', causasJurisdiccion:'todos', causasShowFilters:false,
   asigGuardados:new Set(), modal:null, modalStep:1, successMsg:'', idCounters: { general: 249, narco: 1 },
   form:{tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'},
   aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: 2026, month: 6 },

@@ -2,7 +2,7 @@ window.upCS = function(v){S.causasSearch=v; init_causas();}; window.setCE = func
 window.init_causas = function() {
   let list=S.solicitudes;
   if(S.user?.role === 'perito') list = list.filter(o => o.peritos.includes(S.user.name));
-  if(S.causasSearch){const q=S.causasSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.jur.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
+  if(S.causasSearch){const q=S.causasSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
   if(S.causasEstado!=='todos') list=list.filter(o=>o.estado===S.causasEstado);
   if(S.causasUrgencia!=='todos') list=list.filter(o=>o.urgencia===S.causasUrgencia);
   if(S.causasJurisdiccion!=='todos') list=list.filter(o=>o.jur===S.causasJurisdiccion);

@@ -6,7 +6,7 @@ window.toggleMF = function() { S.mesaShowFilters=!S.mesaShowFilters; init_mesa_e
 
 window.init_mesa_entrada = function() {
   let list=S.solicitudes;
-  if(S.mesaSearch){const q=S.mesaSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.jur.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
+  if(S.mesaSearch){const q=S.mesaSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
   if(S.mesaEstado!=='todos') list=list.filter(o=>o.estado===S.mesaEstado);
   if(S.mesaUrgencia!=='todos') list=list.filter(o=>o.urgencia===S.mesaUrgencia);
   if(S.mesaJurisdiccion!=='todos') list=list.filter(o=>o.jur===S.mesaJurisdiccion);

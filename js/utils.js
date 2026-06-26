@@ -87,6 +87,12 @@ function showToast(msg, type='success') {
     }, 3000);
 }
 
+async function hashPassword(pw) {
+    const enc = new TextEncoder().encode(pw);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 window.chgMonth = function(d) {
     S.cal.month += d;
     if(S.cal.month > 11) { S.cal.month = 0; S.cal.year++; }

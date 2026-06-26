@@ -13,12 +13,7 @@
     <div class="login-right">
         <div class="login-form-wrap">
             <h2 style="font-size:22px;font-weight:700;margin-bottom:6px;">Iniciar sesión</h2>
-            <p style="font-size:14px;color:var(--muted-fg);margin-bottom:24px;">Seleccioná tu perfil e ingresá tus credenciales</p>
-            
-            <div style="margin-bottom:16px;">
-                <label>Perfil de acceso</label>
-                <div class="role-grid" id="login-roles-container"></div>
-            </div>
+            <p style="font-size:14px;color:var(--muted-fg);margin-bottom:24px;">Ingresá con tu usuario y contraseña</p>
             
             <div class="form-row">
                 <label>Usuario</label>
@@ -26,17 +21,20 @@
                     <span class="input-icon">
                         <span data-ic="user" data-size="15"></span>
                     </span>
-                    <input type="text" placeholder="usuario@judicial.gob">
+                    <input type="text" id="username" placeholder="usuario">
                 </div>
             </div>
 
             <div class="form-row">
                 <label>Contraseña</label>
-                <div class="input-wrap has-icon-l">
+                <div class="input-wrap has-icon-l" style="position:relative;">
                     <span class="input-icon">
                         <span data-ic="lock" data-size="15"></span>
                     </span>
                     <input type="password" id="pwd" placeholder="••••••••">
+                    <button type="button" onclick="togglePwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted-fg);" tabindex="-1">
+                        <span data-ic="eye" data-size="16"></span>
+                    </button>
                 </div>
             </div>
             
@@ -46,7 +44,7 @@
             
             <button class="btn btn-primary w-full" onclick="doLogin()" style="justify-content:center;padding:12px;">Ingresar al sistema</button>
             
-            <p style="font-size:12px;color:var(--muted-fg);text-align:center;margin-top:24px;">Para fines demostrativos, seleccioná un perfil y presioná "Ingresar"</p>
+            <p style="font-size:12px;color:var(--muted-fg);text-align:center;margin-top:24px;">Demo: <strong>ana</strong> / mesa123 · <strong>carlos</strong> / coord123 · <strong>laura</strong> / perito123</p>
         </div>
     </div>
 </div>

@@ -2,7 +2,7 @@ window.upCS = function(v){S.causasSearch=v; init_causas();}; window.setCE = func
 window.init_causas = function() {
   let list=S.solicitudes;
   if(S.user?.role === 'perito') list = list.filter(o => o.peritos.includes(S.user.name));
-  if(S.causasSearch){const q=S.causasSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.jur.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
+  if(S.causasSearch){const q=S.causasSearch.toLowerCase();list=list.filter(o=>o.id.toLowerCase().includes(q)||o.exp.toLowerCase().includes(q)||o.imputado.toLowerCase().includes(q)||o.victima.toLowerCase().includes(q)||o.delito.toLowerCase().includes(q)||o.fiscal.toLowerCase().includes(q)||o.peritos.join(' ').toLowerCase().includes(q));}
   if(S.causasEstado!=='todos') list=list.filter(o=>o.estado===S.causasEstado);
   if(S.causasUrgencia!=='todos') list=list.filter(o=>o.urgencia===S.causasUrgencia);
   if(S.causasJurisdiccion!=='todos') list=list.filter(o=>o.jur===S.causasJurisdiccion);
@@ -17,7 +17,7 @@ window.init_causas = function() {
   document.getElementById('causas-panel-filters').innerHTML = S.causasShowFilters?'<div class="filters-panel"><div><div class="fg-lbl">ESTADO</div><div class="filter-pills">'+
   ['todos','pendiente','en-proceso','resuelto'].map(f=>'<button class="filter-btn'+(S.causasEstado===f?' active':'')+'" onclick="setCE(\''+f+'\')">'+{todos:'Todos',pendiente:'Pendiente',['en-proceso']:'En proceso',resuelto:'Resuelto'}[f]+'</button>').join('')+'</div></div><div class="filter-divider"></div>'+
   '<div><div class="fg-lbl">URGENCIA</div><div class="filter-pills">'+['todos','alta','media','baja'].map(f=>'<button class="filter-btn'+(S.causasUrgencia===f?' active':'')+'" onclick="setCU(\''+f+'\')">'+{todos:'Todas',alta:'Alta',media:'Media',baja:'Baja'}[f]+'</button>').join('')+'</div></div><div class="filter-divider"></div>'+
-  '<div><div class="fg-lbl">JURISDICCI\u00d3N</div><div class="filter-pills"><button class="filter-btn'+(S.causasJurisdiccion==='todos'?' active':'')+'" onclick="setCJ(\'todos\')">Todas</button>'+juris.map(j=>'<button class="filter-btn'+(S.causasJurisdiccion===j?' active':'')+'" onclick="setCJ(\''+j+'\')">'+j+'</button>').join('')+'</div></div></div>':'';
+  '<div><div class="fg-lbl">CIRCUNSCRIPCIÓN</div><div class="filter-pills"><button class="filter-btn'+(S.causasJurisdiccion==='todos'?' active':'')+'" onclick="setCJ(\'todos\')">Todas</button>'+juris.map(j=>'<button class="filter-btn'+(S.causasJurisdiccion===j?' active':'')+'" onclick="setCJ(\''+j+'\')">'+j+'</button>').join('')+'</div></div></div>':'';
   
   document.getElementById('causas-list').innerHTML = '<div style="font-size:13px;color:var(--muted-fg);margin-bottom:12px;">'+list.length+' resultado'+(list.length!==1?'s':'')+(S.causasSearch?' para "<strong>'+esc(S.causasSearch)+'</strong>"':'')+'</div>'+
   (list.length===0?'<div class="card"><div class="empty-state">'+ic('search',36,'var(--muted-fg)')+'<p style="font-size:15px;font-weight:500;margin-top:12px;">Sin resultados</p><p style="font-size:13px;margin-top:4px;">Prob\u00e1 con otros t\u00e9rminos o cambi\u00e1 los filtros</p></div></div>':'')+

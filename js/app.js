@@ -188,7 +188,7 @@ function updateModalData() {
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],
                 ['Fiscal', f.fiscal || '—'],
-                ['Jurisdicción', f.jurisdiccion || '—'],
+                ['Circunscripción', f.jurisdiccion || '—'],
                 ['Urgencia', f.urgencia],
                 ['Estado (auto)', 'Pendiente']
             ];

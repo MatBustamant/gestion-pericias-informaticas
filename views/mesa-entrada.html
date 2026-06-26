@@ -6,12 +6,13 @@
         </span>
         <input type="text" id="mesa-search" placeholder="Buscar por N° de Legajo de Causa, N° interno, fiscal, imputado/a, víctima, perito..." oninput="upMS(this.value)">
     </div>
-    <div id="mesa-filters" style="display: contents;"></div>
+    <div id="mesa-btn-filter" style="display: contents;"></div>
 </div>
+<div id="mesa-panel-filters"></div>
 <div class="card" style="margin-bottom:0;">
     <div class="table-wrap">
         <table>
-            <thead><tr><th>N° Interno</th><th>N° de Legajo de Causa</th><th>Imputado/a</th><th>Delito</th><th>Fiscal</th><th>Jurisdicción</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
+            <thead><tr><th>N° Interno</th><th>N° de Legajo de Causa</th><th>Imputado/a</th><th>Delito</th><th>Fiscal</th><th>Circunscripción</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
             <tbody id="mesa-tbody"></tbody>
         </table>
     </div>

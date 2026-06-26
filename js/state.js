@@ -7,14 +7,20 @@ const S = {
   aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: 2026, month: 6 },
 };
 
-S.peritos = [
-  {id:1,nombre:'Laura Suárez',ini:'LS'},
-  {id:2,nombre:'Matías Herrera',ini:'MH'},
-  {id:3,nombre:'Verónica Castro',ini:'VC'},
-  {id:4,nombre:'Diego Romero',ini:'DR'},
-  {id:5,nombre:'Claudia Ríos',ini:'CR'},
-  {id:6,nombre:'Ignacio Palma',ini:'IP'},
+S.users = [
+  {id:1,nombre:'Laura Suárez',ini:'LS',rol:'perito',username:'laura',password:'perito123',lbl:'Perito Informático'},
+  {id:2,nombre:'Matías Herrera',ini:'MH',rol:'perito',username:'matias',password:'perito123',lbl:'Perito Informático'},
+  {id:3,nombre:'Verónica Castro',ini:'VC',rol:'perito',username:'veronica',password:'perito123',lbl:'Perito Informático'},
+  {id:4,nombre:'Diego Romero',ini:'DR',rol:'perito',username:'diego',password:'perito123',lbl:'Perito Informático'},
+  {id:5,nombre:'Claudia Ríos',ini:'CR',rol:'perito',username:'claudia',password:'perito123',lbl:'Perito Informático'},
+  {id:6,nombre:'Ignacio Palma',ini:'IP',rol:'perito',username:'ignacio',password:'perito123',lbl:'Perito Informático'},
+  {id:7,nombre:'Ana González',ini:'AG',rol:'mesa',username:'ana',password:'mesa123',lbl:'Mesa de Entrada'},
+  {id:8,nombre:'Carlos Méndez',ini:'CM',rol:'coordinador',username:'carlos',password:'coord123',lbl:'Coordinador'}
 ];
+
+Object.defineProperty(S, 'peritos', {
+  get() { return S.users.filter(u => u.rol === 'perito'); }
+});
 
 S.solicitudes = [
   {id:'20260248',tipo:'general',exp:'12458/2026',imputado:'Rodr\u00edguez, Marcelo Ariel',victima:'Empresa FinTech SA',delito:'Estafa inform\u00e1tica (art. 172 CP)',fiscal:'Dr. Agust\u00edn Lara',jur:'Capital',secuestros:'1 notebook HP Pavilion, 1 tel\u00e9fono Motorola G84, 1 pendrive Kingston 64GB',tareas:'Extracci\u00f3n forense de dispositivos, an\u00e1lisis de transferencias bancarias y correo electr\u00f3nico',urgencia:'alta',estado:'pendiente',fhi:null,peritos:[]},
@@ -26,12 +32,6 @@ S.solicitudes = [
   {id:'20260242',tipo:'general',exp:'10201/2026',imputado:'Morales, Santiago Ezequiel',victima:'Menores de edad (3 v\u00edctimas)',delito:'Pornograf\u00eda infantil — art. 128 CP',fiscal:'Dra. Patricia Su\u00e1rez',jur:'Monte Quemado',secuestros:'1 PC desktop, 2 discos r\u00edgidos externos, material digital en CD/DVD',tareas:'Extracci\u00f3n y an\u00e1lisis forense, identificaci\u00f3n de material il\u00edcito, rastreo de origen',urgencia:'alta',estado:'en-proceso',fhi:'2026-06-11T08:00',peritos:['Laura Su\u00e1rez']},
   {id:'20260241',tipo:'general',exp:'9980/2026',imputado:'Desconocido (IP identificada)',victima:'Banco Provincial SA',delito:'Phishing y fraude bancario electr\u00f3nico',fiscal:'Dr. Luis Castillo',jur:'Termas',secuestros:'Evidencia digital en la nube, registros de servidor',tareas:'An\u00e1lisis de logs, rastreo de IP, pericia sobre sitio web fraudulento',urgencia:'media',estado:'resuelto',fhi:'2026-06-10T10:00',peritos:['Ignacio Palma']},
 ];
-
-const ROLES={
-  mesa:{name:'Ana Gonz\u00e1lez',ini:'AG',lbl:'Mesa de Entrada'},
-  coordinador:{name:'Carlos M\u00e9ndez',ini:'CM',lbl:'Coordinador'},
-  perito:{name:'Laura Su\u00e1rez',ini:'LS',lbl:'Perito Inform\u00e1tico'}
-};
 
 const NAV=[
   {id:'dashboard',lbl:'Inicio',ic:'dash',roles:['mesa', 'coordinador', 'perito']},

@@ -12,9 +12,9 @@ const DB = {
       this._save('asigGuardados', [...S.asigGuardados]);
       this._save('idCounters', S.idCounters);
     }
-    const peritos = this._load('peritos');
-    if (peritos) S.peritos = peritos;
-    else this._save('peritos', S.peritos);
+    const users = this._load('users');
+    if (users) S.users = users;
+    else this._save('users', S.users);
   },
 
   _load(key, def = null) {
@@ -26,5 +26,5 @@ const DB = {
   async saveSolicitudes()   { this._save('solicitudes', S.solicitudes); },
   async saveAsigGuardados() { this._save('asigGuardados', [...S.asigGuardados]); },
   async saveIdCounters()    { this._save('idCounters', S.idCounters); },
-  async savePeritos() { this._save('peritos', S.peritos); },
+  async saveUsers() { this._save('users', S.users); },
 };

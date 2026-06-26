@@ -9,8 +9,9 @@ function setLR(r) {
 }
 
 function doLogin() {
-    const r = ROLES[S.loginRole] || ROLES.mesa;
-    S.user = {role: S.loginRole, ...r};
+    const user = S.users.find(u => u.rol === S.loginRole);
+    if (!user) return;
+    S.user = user;
     S.loggedIn = true;
     nav('dashboard');
 }

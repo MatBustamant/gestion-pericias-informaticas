@@ -48,7 +48,7 @@ function updateShell() {
         const roles = btn.getAttribute('data-roles').split(',');
         const isActive = (S.screen === 'detalle-causa' ? 'causas' : S.screen) === route;
         
-        btn.style.display = roles.includes(S.user?.role) ? 'flex' : 'none';
+        btn.style.display = roles.includes(S.user?.rol) ? 'flex' : 'none';
         btn.classList.toggle('active', isActive);
         
         const iconContainer = btn.querySelector('.nav-ic span');
@@ -58,10 +58,10 @@ function updateShell() {
     });
 
     // 2. Sidebar: Datos del Usuario
-    const u = ROLES[S.user?.role] || ROLES.mesa;
-    document.getElementById('sb-user-ini').innerText = u.ini;
-    document.getElementById('sb-user-name').innerText = u.name;
-    document.getElementById('sb-user-role').innerText = u.lbl;
+    const u = S.user || {};
+    document.getElementById('sb-user-ini').innerText = u.ini || '';
+    document.getElementById('sb-user-name').innerText = u.nombre || '';
+    document.getElementById('sb-user-role').innerText = u.lbl || '';
 
     // 3. Topbar: Título y Breadcrumbs
     const screenNameEl = document.getElementById('tb-screen-name');

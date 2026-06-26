@@ -17,11 +17,6 @@ async function nav(screen, id = '') {
 
     try {
         const html = await fetch(`views/${screen}.html`).then(r => r.text());
-        
-        // Construimos la alerta global si hay un mensaje de éxito
-        const alertHtml = S.successMsg 
-            ? `<div style="padding: 1rem 2rem 0 2rem;"><div class="alert alert-success">${ic('checkC', 16, '#065F46')} ${esc(S.successMsg)}</div></div>` 
-            : '';
 
         // Inyectamos el Shell usando los componentes cacheados
         app.innerHTML = `
@@ -29,7 +24,6 @@ async function nav(screen, id = '') {
                 ${COMPS.sidebar}
                 <div class="main-area">
                     ${COMPS.topbar}
-                    ${alertHtml}
                     <main class="content" id="mc">${html}</main>
                 </div>
             </div>`;
@@ -40,9 +34,6 @@ async function nav(screen, id = '') {
         const initFn = window['init_' + screen.replace('-', '_')];
         if (initFn) initFn();
 
-        if (S.successMsg) {
-            setTimeout(() => { S.successMsg = ''; nav(S.screen); }, 3000);
-        }
     } catch (e) {
         console.error("Error en router:", e);
         app.innerHTML = "<h2>Error cargando la vista</h2>";
@@ -57,7 +48,7 @@ function updateShell() {
         const roles = btn.getAttribute('data-roles').split(',');
         const isActive = (S.screen === 'detalle-causa' ? 'causas' : S.screen) === route;
         
-        btn.style.display = roles.includes(S.user?.role) ? 'flex' : 'none';
+        btn.style.display = roles.includes(S.user?.rol) ? 'flex' : 'none';
         btn.classList.toggle('active', isActive);
         
         const iconContainer = btn.querySelector('.nav-ic span');
@@ -67,13 +58,15 @@ function updateShell() {
     });
 
     // 2. Sidebar: Datos del Usuario
-    const u = ROLES[S.user?.role] || ROLES.mesa;
-    document.getElementById('sb-user-ini').innerText = u.ini;
-    document.getElementById('sb-user-name').innerText = u.name;
-    document.getElementById('sb-user-role').innerText = u.lbl;
+    const u = S.user || {};
+    document.getElementById('sb-user-ini').innerText = u.ini || '';
+    document.getElementById('sb-user-name').innerText = u.nombre || '';
+    document.getElementById('sb-user-role').innerText = u.lbl || '';
 
     // 3. Topbar: Título y Breadcrumbs
-    document.getElementById('tb-screen-name').innerText = screenLbl();
+    const screenNameEl = document.getElementById('tb-screen-name');
+    screenNameEl.innerText = screenLbl();
+    
     const sep = document.getElementById('tb-detail-separator');
     const idEl = document.getElementById('tb-detail-id');
     
@@ -84,10 +77,20 @@ function updateShell() {
         sep.style.display = 'flex';
         idEl.style.display = 'block';
         idEl.innerText = prefijo + S.detailId;
+        
+        screenNameEl.style.cursor = 'pointer';
+        screenNameEl.style.color = 'var(--muted-fg)';
+        screenNameEl.onclick = () => nav('causas'); 
+        
     } else {
         sep.style.display = 'none';
         idEl.style.display = 'none';
+        
+        screenNameEl.style.cursor = 'default';
+        screenNameEl.style.color = '';
+        screenNameEl.onclick = null;
     }
+    renderNotifBadge();
 }
 
 function toggleSB(){S.sidebarOpen=!S.sidebarOpen;const sb=document.getElementById('sidebar');if(sb){sb.classList.toggle('open',S.sidebarOpen);sb.classList.toggle('closed',!S.sidebarOpen);}}
@@ -102,7 +105,19 @@ async function initApp() {
         // ¡AGREGAMOS LAS DOS LÍNEAS PARA LOS MODALES!
         COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
-        
+
+        await DB.init();
+
+        const session = await DB.loadSession();
+        if (session?.username) {
+            const user = S.users.find(u => u.username === session.username);
+            if (user) {
+                S.user = user;
+                S.loggedIn = true;
+                nav('dashboard');
+                return;
+            }
+        }
         nav('login');
     } catch (e) {
         console.error("Error cargando componentes base:", e);
@@ -119,7 +134,12 @@ function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
 function mBack(){S.modalStep=1; updateModalData(); } // Acá tampoco
 function toggleP(nombre){if(!S.aForm.peritosSeleccionados)S.aForm.peritosSeleccionados=[];const i=S.aForm.peritosSeleccionados.indexOf(nombre);if(i>=0)S.aForm.peritosSeleccionados.splice(i,1);else S.aForm.peritosSeleccionados.push(nombre); updateModalData(); }
-
+window.removePerito = function(nombre) {
+    if (S.aForm.peritosSeleccionados) {
+        S.aForm.peritosSeleccionados = S.aForm.peritosSeleccionados.filter(p => p !== nombre);
+        updateModalData();
+    }
+};
 // Esta función carga el esqueleto estático del modal desde la caché
 function rmModal() {
     const e = document.getElementById('moverlay');
@@ -172,7 +192,7 @@ function updateModalData() {
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],
                 ['Fiscal', f.fiscal || '—'],
-                ['Jurisdicción', f.jurisdiccion || '—'],
+                ['Circunscripción', f.jurisdiccion || '—'],
                 ['Urgencia', f.urgencia],
                 ['Estado (auto)', 'Pendiente']
             ];
@@ -190,58 +210,176 @@ function updateModalData() {
     else if (S.modal === 'asignar-perito') {
         const f = S.aForm;
         const o = S.solicitudes.find(x => x.id === f.solicitudId);
-        const dp = S.peritos.filter(p => p.disp);
+        const p = S.peritos;
 
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
         document.getElementById('am-fhi').value = f.fechaHoraInforme || '';
 
-        // Renderizar lista de selección de peritos
-        document.getElementById('am-peritos-group').innerHTML = dp.map(p => {
-            const sel = (f.peritosSeleccionados || []).includes(p.nombre);
-            return `
-                <div class="check-item ${sel ? 'checked' : ''}" onclick="toggleP('${p.nombre}')">
-                    <div class="check-box">${sel ? ic('check', 10, 'white') : ''}</div>
-                    <div style="flex:1;">
-                        <div style="font-weight:500;">${esc(p.nombre)}</div>
-                        <div style="font-size:11px; color:var(--muted-fg);">${esc(p.esp)} · Carga actual: ${p.carga}/${p.max}</div>
+        // 1. Poblar el <datalist> dinámicamente con los peritos registrados
+        const datalist = document.getElementById('dl-peritos');
+        if (datalist) {
+            datalist.innerHTML = p.map(peri => `<option value="${peri.nombre}">${peri.nombre}</option>`).join('');
+        }
+
+        // 2. Renderizar los peritos que ya están seleccionados como Etiquetas (Tags)
+        const tagsContainer = document.getElementById('am-selected-tags');
+        if (tagsContainer) {
+            tagsContainer.innerHTML = (f.peritosSeleccionados || []).map(pName => {
+                return `<div style="background:var(--primary); color:white; padding:4px 10px; border-radius:12px; font-size:12px; display:flex; align-items:center; gap:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    ${esc(pName)}
+                    <span style="cursor:pointer; font-weight:bold; font-size:14px; opacity:0.8;" onclick="removePerito('${pName}')" title="Quitar">×</span>
+                </div>`;
+            }).join('');
+        }
+
+        // 3. Escuchar cuando el usuario selecciona un nombre del datalist
+        const searchInput = document.getElementById('am-perito-search');
+        if (searchInput && !searchInput.dataset.listener) {
+            searchInput.dataset.listener = "true"; // Evita crear el listener múltiples veces
+            
+            searchInput.addEventListener('change', function(e) {
+                const val = e.target.value.trim();
+                const exists = p.some(peri => peri.nombre === val);
+                
+                if (exists) {
+                    if (!f.peritosSeleccionados) f.peritosSeleccionados = [];
+                    // Si el perito no estaba en la lista, lo agregamos
+                    if (!f.peritosSeleccionados.includes(val)) {
+                        f.peritosSeleccionados.push(val);
+                        e.target.value = ''; // Limpiamos el input
+                        updateModalData(); // RE-RENDERIZA TODO (Etiquetas y Calendario)
+                    } else {
+                        e.target.value = ''; // Ya estaba seleccionado, solo limpiamos el input
+                    }
+                }
+            });
+        }
+
+        // --- CÁLCULO DE CONFLICTOS Y ACTUALIZACIÓN REACTIVA DE AGENDA ---
+        let overlappingIds = [];
+        const conflictDiv = document.getElementById('am-conflict-warning');
+        
+        if (f.fechaHoraInforme && f.peritosSeleccionados && f.peritosSeleccionados.length > 0) {
+            const targetDate = f.fechaHoraInforme.split('T')[0];
+            const overlapping = S.solicitudes.filter(x =>
+                x.id !== f.solicitudId && x.estado !== 'resuelto' &&
+                x.fhi && x.fhi.startsWith(targetDate) &&
+                x.peritos.some(p => f.peritosSeleccionados.includes(p))
+            );
+
+            if (overlapping.length > 0) {
+                overlappingIds = overlapping.map(x => x.id);
+                conflictDiv.innerHTML = `<div class="alert alert-warning" style="margin-bottom:16px; border-color:#EF4444; background:#FEF2F2; color:#991B1B;">
+                    ${ic('alertC', 16, '#EF4444')}
+                    <div><strong>¡Conflicto de Agenda Detectado!</strong><br>
+                    Peritos ocupados en esta fecha:
+                    <ul style="margin-top:4px; margin-bottom:0; padding-left:20px;">
+                        ${overlapping.map(ov => `<li style="font-size:12px;"><strong>${ov.fhi.split('T')[1]} hs</strong> - Exp. ${ov.exp}</li>`).join('')}
+                    </ul>
                     </div>
                 </div>`;
-        }).join('');
+            } else {
+                conflictDiv.innerHTML = '';
+            }
+        } else if (conflictDiv) {
+            conflictDiv.innerHTML = '';
+        }
 
-        const selCount = (f.peritosSeleccionados || []).length;
-        document.getElementById('am-selected-lbl').innerText = selCount > 0 ? `Seleccionados: ${(f.peritosSeleccionados).join(', ')}` : '';
+        let tentativeEvent = null;
+        if (f.fechaHoraInforme && f.peritosSeleccionados && f.peritosSeleccionados.length > 0) {
+            const [datePart, timePart] = f.fechaHoraInforme.split('T');
+            tentativeEvent = {
+                date: datePart, // YYYY-MM-DD
+                time: timePart, // HH:MM
+                peritos: f.peritosSeleccionados
+            };
+        }
+
+        // MODIFICADO: Inyectar el calendario lateral pasándole las IDs conflictivas Y el evento tentativo
+        const calContainer = document.getElementById('am-calendar-container');
+        if (calContainer) {
+            calContainer.innerHTML = buildCalendarHTML(overlappingIds, tentativeEvent);
+        }
     }
 }
 
-function saveOficio(){
+async function saveOficio(){
   const f=S.form;
   if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
   const id=genId(f.tipo);
-  const td=todayStr();
-  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',ingreso:td,fhi:null,peritos:[]});
+  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
   closeM();
-  S.successMsg = `Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`;
+  showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+  await DB.saveSolicitudes();
+  await DB.saveIdCounters();
   nav(S.screen);
 }
 
-function saveAsig(){
+async function saveAsig(){
   const f=S.aForm;
   if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
   if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
   const o=S.solicitudes.find(x=>x.id===f.solicitudId);
   const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
   if(o){
-    o.peritos.forEach(oldPName => {
-       const p = S.peritos.find(x => x.nombre === oldPName);
-       if(p && p.carga > 0) { p.carga--; p.disp = p.carga < p.max; }
-    });
-    o.peritos=[...f.peritosSeleccionados]; o.fhi=f.fechaHoraInforme;
-    o.peritos.forEach(newPName => {
-       const p = S.peritos.find(x => x.nombre === newPName);
-       if(p) { p.carga++; p.disp = p.carga < p.max; }
-    });
+    o.peritos=[...f.peritosSeleccionados];
+    o.fhi=f.fechaHoraInforme;
   }
   closeM();
-  S.successMsg = `Asignación guardada para ${prefijo}${f.solicitudId}`;
+  showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
+  await DB.saveSolicitudes();
   nav(S.screen);
+}
+
+function renderNotifBadge() {
+    const dot = document.getElementById('notif-dot');
+    if (!dot) return;
+    const readIds = S.notifLeidas[S.user?.username] || [];
+    const unread = S.solicitudes.filter(s =>
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
+    );
+    dot.style.display = unread.length > 0 ? '' : 'none';
+}
+
+function toggleNotifPanel() {
+    const dd = document.getElementById('notif-dropdown');
+    if (!dd) return;
+    const isOpen = dd.style.display === 'block';
+    dd.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) {
+        renderNotifDropdown();
+        markNotifAsRead();
+    }
+}
+
+function renderNotifDropdown() {
+    const dd = document.getElementById('notif-dropdown');
+    if (!dd) return;
+    const readIds = S.notifLeidas[S.user?.username] || [];
+    const pendientes = S.solicitudes.filter(s =>
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
+    );
+    if (pendientes.length === 0) {
+        dd.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted-fg);font-size:13px;">Sin notificaciones</div>';
+        return;
+    }
+    dd.innerHTML = pendientes.map(s => `
+        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id}'); document.getElementById('notif-dropdown').style.display='none';">
+            <div style="font-size:13px;font-weight:500;">Se le ha asignado una nueva solicitud</div>
+            <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">N.º de Legajo de Causa ${esc(s.exp)}</div>
+        </div>
+    `).join('');
+}
+
+async function markNotifAsRead() {
+    const username = S.user?.username;
+    if (!username) return;
+    const readIds = S.notifLeidas[username] || [];
+    const unread = S.solicitudes.filter(s =>
+        s.peritos.includes(S.user?.nombre) && s.estado === 'en-proceso' && !readIds.includes(s.id)
+    );
+    if (unread.length === 0) return;
+    S.notifLeidas[username] = [...readIds, ...unread.map(s => s.id)];
+    await DB.saveNotifLeidas();
+    renderNotifBadge();
 }

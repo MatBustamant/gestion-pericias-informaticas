@@ -1,28 +1,52 @@
 <div class="modal-overlay" id="moverlay" onclick="closeMOI(event)">
-    <div class="modal modal-sm" onclick="event.stopPropagation()">
-        <div class="modal-head">
-            <div>
-                <div class="modal-title">Asignar Peritos</div>
-                <div class="modal-sub-txt" id="am-modal-sub" style="font-weight:bold;"></div>
+    <div class="modal-workspace" onclick="event.stopPropagation()">
+
+        <div class="modal-panel modal-panel-main">
+            <div class="modal-head">
+                <div>
+                    <div class="modal-title">Asignar Peritos</div>
+                    <div class="modal-sub-txt" id="am-modal-sub" style="font-weight:bold;"></div>
+                </div>
             </div>
-            <button class="btn-icon" onclick="closeM()" style="color:rgba(255,255,255,.7);"><span data-ic="x" data-size="18"></span></button>
-        </div>
-        
-        <div class="modal-body">
-            <div class="form-row">
-                <label>Fecha y hora programada para apertura del informe *</label>
-                <input type="datetime-local" id="am-fhi" oninput="S.aForm.fechaHoraInforme=this.value">
+
+            <div class="modal-body">
+                <div id="am-conflict-warning"></div>
+                <div class="form-row">
+                    <label>Fecha y hora programada para apertura del informe *</label>
+                    <input type="datetime-local" id="am-fhi"
+                        oninput="S.aForm.fechaHoraInforme=this.value; updateModalData();">
+                </div>
+                <div class="form-row">
+                    <label>Buscar y seleccionar peritos *</label>
+                    <!-- Input con datalist asociado -->
+                    <input type="text" id="am-perito-search" list="dl-peritos" class="form-control"
+                        placeholder="Escriba o seleccione un nombre...">
+                    <datalist id="dl-peritos"></datalist>
+
+                    <!-- Contenedor para los tags de peritos seleccionados -->
+                    <div id="am-selected-tags" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
+                </div>
             </div>
-            <div class="form-row">
-                <label>Peritos responsables *</label>
-                <div class="check-group" id="am-peritos-group"></div>
-                <div style="margin-top:8px; font-size:12px; color:var(--primary); font-weight:500;" id="am-selected-lbl"></div>
+
+            <div class="modal-foot">
+                <button class="btn btn-ghost" onclick="closeM()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveAsig()">Guardar asignación</button>
             </div>
         </div>
-        
-        <div class="modal-foot">
-            <button class="btn btn-ghost" onclick="closeM()">Cancelar</button>
-            <button class="btn btn-primary" onclick="saveAsig()">Guardar asignación</button>
+
+        <div class="modal-panel modal-panel-agenda">
+            <div class="modal-head" style="background: var(--secondary); border-bottom: 1px solid var(--border);">
+                <div>
+                    <div class="modal-title" style="color: var(--fg);">Agenda Operativa</div>
+                    <div class="modal-sub-txt" style="color: var(--muted-fg);">Visualización de agenda y
+                        conflictos</div>
+                </div>
+                <button class="btn-icon" onclick="closeM()" style="color:var(--muted-fg);"><span data-ic="x"
+                        data-size="18"></span></button>
+            </div>
+            <div class="modal-body" style="padding: 0; background: var(--bg);" id="am-calendar-container">
+            </div>
         </div>
+
     </div>
 </div>

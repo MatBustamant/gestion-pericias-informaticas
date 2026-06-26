@@ -4,14 +4,17 @@
     <div class="breadcrumb">
         <span>Sistema de Gestión</span>
         <span style="display:flex;"><span data-ic="chevR" data-size="13"></span></span>
-        <span class="breadcrumb-cur" id="tb-screen-name"></span>
+        <span class="breadcrumb-cur" id="tb-screen-name" style="transition: color 0.2s;"></span>
         
-        <span id="tb-detail-separator" style="display:none;"><span data-ic="chevR" data-size="13"></span></span>
-        <span class="breadcrumb-cur mono" id="tb-detail-id" style="font-size:12px; display:none;"></span>
+        <span id="tb-detail-separator" style="display:none; margin: 0 4px;"><span data-ic="chevR" data-size="13"></span></span>
+        <span class="breadcrumb-cur mono" id="tb-detail-id" style="font-size:12px; display:none; color: var(--fg); font-weight: 500;"></span>
     </div>
     
     <div class="notif-wrap">
-        <button class="btn-icon"><span data-ic="bell" data-size="18"></span></button>
-        <span class="notif-dot"></span>
+        <button class="btn-icon" id="notif-bell" onclick="toggleNotifPanel()">
+            <span data-ic="bell" data-size="18"></span>
+        </button>
+        <span class="notif-dot" id="notif-dot"></span>
+        <div class="notif-dropdown" id="notif-dropdown"></div>
     </div>
 </header>

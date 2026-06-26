@@ -63,6 +63,30 @@ function bdg(e){const m={pendiente:'bp',['en-proceso']:'bi',resuelto:'br'};const
 function ubdg(u){const m={alta:'bu-a',media:'bu-m',baja:'bu-b'};return '<span class="badge '+(m[u]||'bu-m')+'">'+u.charAt(0).toUpperCase()+u.slice(1)+'</span>';}
 function screenLbl(){const s=S.screen==='detalle-causa'?'causas':S.screen;return (NAV.find(n=>n.id===s)||{lbl:'Detalle'}).lbl;}
 
+function showToast(msg, type='success') {
+    const map = {
+        success: { icon: 'checkC', cls: 'alert-success', color: '#065F46' },
+        error:   { icon: 'alertC', cls: 'alert-error',   color: '#991B1B' },
+        warning: { icon: 'alertC', cls: 'alert-warning', color: '#A16207' }
+    };
+    const c = map[type] || map.success;
+
+    const existing = document.getElementById('toast-global');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.id = 'toast-global';
+    toast.innerHTML = `<div class="alert ${c.cls}" style="margin:0;">${ic(c.icon, 16, c.color)} ${esc(msg)}</div>`;
+    toast.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:9999; max-width:420px; border-radius:12px; animation:slideIn .3s ease;';
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.transition = 'opacity .3s, transform .3s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 window.chgMonth = function(d) {
     S.cal.month += d;
     if(S.cal.month > 11) { S.cal.month = 0; S.cal.year++; }

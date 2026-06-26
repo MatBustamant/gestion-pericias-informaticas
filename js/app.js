@@ -17,11 +17,6 @@ async function nav(screen, id = '') {
 
     try {
         const html = await fetch(`views/${screen}.html`).then(r => r.text());
-        
-        // Construimos la alerta global si hay un mensaje de éxito
-        const alertHtml = S.successMsg 
-            ? `<div style="padding: 1rem 2rem 0 2rem;"><div class="alert alert-success">${ic('checkC', 16, '#065F46')} ${esc(S.successMsg)}</div></div>` 
-            : '';
 
         // Inyectamos el Shell usando los componentes cacheados
         app.innerHTML = `
@@ -29,7 +24,6 @@ async function nav(screen, id = '') {
                 ${COMPS.sidebar}
                 <div class="main-area">
                     ${COMPS.topbar}
-                    ${alertHtml}
                     <main class="content" id="mc">${html}</main>
                 </div>
             </div>`;
@@ -40,9 +34,6 @@ async function nav(screen, id = '') {
         const initFn = window['init_' + screen.replace('-', '_')];
         if (initFn) initFn();
 
-        if (S.successMsg) {
-            setTimeout(() => { S.successMsg = ''; nav(S.screen); }, 3000);
-        }
     } catch (e) {
         console.error("Error en router:", e);
         app.innerHTML = "<h2>Error cargando la vista</h2>";
@@ -305,7 +296,7 @@ function saveOficio(){
   const id=genId(f.tipo);
   S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
   closeM();
-  S.successMsg = `Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`;
+  showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
   nav(S.screen);
 }
 
@@ -320,6 +311,6 @@ function saveAsig(){
     o.fhi=f.fechaHoraInforme;
   }
   closeM();
-  S.successMsg = `Asignación guardada para ${prefijo}${f.solicitudId}`;
+  showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
   nav(S.screen);
 }

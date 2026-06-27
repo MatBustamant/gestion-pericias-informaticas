@@ -105,6 +105,7 @@ async function initApp() {
         COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
         COMPS.card = await fetch('components/card-solicitud.html').then(r => r.text());
+        COMPS.calendar = await fetch('components/calendar.html').then(r => r.text());
 
         await DB.init();
 
@@ -295,10 +296,14 @@ function updateModalData() {
             };
         }
 
-        // MODIFICADO: Inyectar el calendario lateral pasándole las IDs conflictivas Y el evento tentativo
         const calContainer = document.getElementById('am-calendar-container');
         if (calContainer) {
-            calContainer.innerHTML = buildCalendarHTML(overlappingIds, tentativeEvent);
+            calContainer.innerHTML = '';
+            calContainer.appendChild(buildCalendar({
+                conflictIds: overlappingIds,
+                tentativeEvent: tentativeEvent,
+                onMonthChange: () => updateModalData()
+            }));
         }
     }
 }

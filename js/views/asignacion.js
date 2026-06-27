@@ -27,7 +27,4 @@ function init_asignacion() {
     pend.forEach(o => container.appendChild(buildCard(o, { mode: 'asignar', confirmed: o.estado === 'en-proceso' })));
   }
 
-  // Calendar (si existe)
-  const calPanel = document.getElementById('asig-calendar-panel');
-  if (calPanel) calPanel.innerHTML = buildCalendarHTML();
 }

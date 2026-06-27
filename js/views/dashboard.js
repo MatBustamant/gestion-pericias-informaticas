@@ -34,23 +34,20 @@ window.init_dashboard = function() {
   
   document.getElementById('dash-stats').innerHTML = stats.map(s=>'<div class="stat-card"><div class="stat-iw" style="background:'+s.bg+';">'+ic(s.ic,17,s.col)+'</div><div class="stat-val">'+s.val+'</div><div class="stat-lbl">'+s.lbl+'</div><div class="stat-sub">'+s.sub+'</div></div>').join('');
   
+  const charts = document.getElementById('dash-charts');
   if (r === 'perito') {
-      document.getElementById('dash-charts').innerHTML = `
-      <div class="card" style="grid-column: 1 / -1; overflow:hidden; display:flex; flex-direction:column; min-height:400px;">
+      charts.innerHTML = `
+      <div class="card" style="grid-column:1/-1;overflow:hidden;display:flex;flex-direction:column;min-height:400px;">
           <div class="card-head"><div class="card-title">Agenda Global de Pericias</div></div>
-          <div class="card-body" style="padding:0; flex:1;">
-              ${buildCalendarHTML()} 
-          </div>
+          <div class="card-body dash-cal-body" style="padding:0;flex:1;"></div>
       </div>`;
   } else {
-      document.getElementById('dash-charts').innerHTML = `
-      <div class="card" style="overflow:hidden; display:flex; flex-direction:column; min-height:400px;">
+      charts.innerHTML = `
+      <div class="card" style="overflow:hidden;display:flex;flex-direction:column;min-height:400px;">
           <div class="card-head"><div><div class="card-title">Agenda General</div><div class="card-sub">Vista de aperturas programadas globales</div></div></div>
-          <div class="card-body" style="padding:0; flex:1;">
-              ${buildCalendarHTML()}
-          </div>
+          <div class="card-body dash-cal-body" style="padding:0;flex:1;"></div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;">
           <div class="card" style="margin-bottom:0;">
               <div class="card-head"><div><div class="card-title">Solicitudes por semana</div></div></div>
               <div class="card-body"><div class="bar-chart-wrap">`+ wd.map(d=>`<div class="bar-group"><div class="bar-pair" style="height:140px;"><div class="bar-el" style="height:`+Math.round((d.i/mx)*100)+`%;background:#1B3A6B;"></div><div class="bar-el" style="height:`+Math.round((d.r/mx)*100)+`%;background:#0EA5E9;"></div></div><div class="bar-lbl">`+d.d+`</div></div>`).join('')+
@@ -58,6 +55,9 @@ window.init_dashboard = function() {
           </div>
       </div>`;
   }
+  charts.querySelector('.dash-cal-body').appendChild(
+      buildCalendar({ onMonthChange: () => init_dashboard() })
+  );
   
   document.getElementById('dash-recent-tbody').innerHTML = recent.length===0?'<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted-fg);">Sin resultados</td></tr>':
   recent.map(o=>'<tr onclick="nav(\'detalle-causa\',\''+o.id+'\')"><td class="td-mono">'+(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)+'</td><td style="font-size:12px;color:var(--muted-fg);">'+esc(o.exp)+'</td>'+

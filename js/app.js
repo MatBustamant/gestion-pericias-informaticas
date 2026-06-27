@@ -102,9 +102,9 @@ async function initApp() {
         COMPS.sidebar = await fetch('components/sidebar.html').then(r => r.text());
         COMPS.topbar = await fetch('components/topbar.html').then(r => r.text());
         
-        // ¡AGREGAMOS LAS DOS LÍNEAS PARA LOS MODALES!
         COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
+        COMPS.card = await fetch('components/card-solicitud.html').then(r => r.text());
 
         await DB.init();
 

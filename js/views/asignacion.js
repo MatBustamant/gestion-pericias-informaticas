@@ -27,14 +27,16 @@ window.init_asignacion = function() {
             </div>
         </div>`;
     }).join('');
-  document.getElementById('asig-solicitudes').innerHTML = pend.length===0?'<div class="card"><div class="empty-state"><p>No hay solicitudes pendientes.</p></div></div>':
-  pend.map(o=>{
-    const g=o.estado === 'en-proceso';
-    return '<div class="solicitud-card'+(g?' confirmed':'')+'"><div class="solicitud-meta"><span class="td-mono">'+(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)+'</span><span style="color:var(--muted-fg);">·</span><span style="font-size:12px;color:var(--muted-fg);">Exp. '+esc(o.exp)+'</span><span class="badges-right">'+ubdg(o.urgencia)+bdg(o.estado)+'</span></div>'+
-    '<div class="solicitud-title">'+esc(o.imputado)+' s/ '+esc(o.delito)+'</div><div class="solicitud-details">'+ ic('pin',11,'var(--muted-fg)')+' '+esc(o.jur)+' · '+ic('file',11,'var(--muted-fg)')+' '+esc(o.fiscal)+(o.fhi?' · '+ic('cal',11,'var(--muted-fg)')+'<strong>'+fmtDT(o.fhi)+'</strong>':'')+'</div>'+
-    '<div class="solicitud-foot"><span style="font-size:12px;font-weight:500;color:var(--muted-fg);">Perito/s:</span>'+(o.peritos.length>0?o.peritos.map(p=>'<span class="assigned-chip">'+ic('user',11,'var(--primary)')+' '+esc(p)+'</span>').join(''):'<span style="font-size:13px;color:var(--muted-fg);">Sin asignar</span>')+
-    '<div style="margin-left:auto;display:flex;gap:8px;">'+(g?'<span class="badge badge-estado br">Confirmado</span>':'')+(!g?'<button class="btn btn-primary btn-sm" onclick="openAM(\''+o.id+'\')">'+ic(o.peritos.length>0?'edit':'users',13,'white')+' '+(o.peritos.length>0?'Editar':'Asignar')+'</button>':'')+(!g&&o.peritos.length>0?'<button class="btn btn-success btn-sm" onclick="confirmAsig(\''+o.id+'\')">'+ic('check',13,'white')+' Confirmar</button>':'')+'</div></div></div>';
-  }).join('');
+  const container = document.getElementById('asig-solicitudes');
+  container.innerHTML = '';
+  if (pend.length === 0) {
+    container.innerHTML = '<div class="card"><div class="empty-state"><p>No hay solicitudes pendientes.</p></div></div>';
+  } else {
+    pend.forEach(o => {
+      const g = o.estado === 'en-proceso';
+      container.appendChild(buildCard(o, { mode: 'asignar', confirmed: g }));
+    });
+  }
   const calPanel = document.getElementById('asig-calendar-panel');
     if (calPanel) calPanel.innerHTML = buildCalendarHTML();
 };

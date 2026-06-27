@@ -10,7 +10,6 @@ window.init_causas = function() {
   document.getElementById('causas-header').innerHTML = '<div><div class="page-title">Consulta de Solicitudes</div><div class="page-sub">'+list.length+' causas disponibles</div></div>';
   document.getElementById('causas-search').value = S.causasSearch;
   
-  const ac={alta:'var(--p-high)',media:'var(--p-med)',baja:'var(--p-low)'};
   document.getElementById('causas-btn-filter').innerHTML = '<button class="filter-btn'+(S.causasShowFilters?' active':'')+'" onclick="toggleCF()" style="display:flex;align-items:center;gap:6px;">'+ic('sliders',14)+' Filtros'+((S.causasEstado!=='todos'||S.causasUrgencia!=='todos'||S.causasJurisdiccion!=='todos')?'<span style="width:16px;height:16px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;">'+[S.causasEstado,S.causasUrgencia,S.causasJurisdiccion].filter(f=>f!=='todos').length+'</span>':'')+'</button>';
   
   const juris=[...new Set(S.solicitudes.map(o=>o.jur))];

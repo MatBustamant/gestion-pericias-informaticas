@@ -331,6 +331,19 @@ async function saveAsig(){
   nav(S.screen);
 }
 
+async function confirmAsig(id) { 
+    const o = S.solicitudes.find(x => x.id === id);
+    
+    if (o && o.estado === 'pendiente') {
+        o.estado = 'en-proceso';
+    }
+
+    await DB.saveSolicitudes();
+    showToast('Asignación confirmada para ' + `${(o.tipo==='narco'?'NAR-':'GEN-')}${id}`, 'success');
+    
+    init_asignacion(); 
+};
+
 function renderNotifBadge() {
     const dot = document.getElementById('notif-dot');
     if (!dot) return;

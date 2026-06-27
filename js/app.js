@@ -127,6 +127,42 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
+window.promptDesestimarSolicitud = function() {
+    const input = prompt("Ingrese el N° Interno de la solicitud a desestimar (ej. 20260248 o GEN-20260248):");
+    if (!input) return;
+    
+    const cleanId = input.replace(/^(GEN-|NAR-)/i, '').trim();
+    const req = S.solicitudes.find(s => s.id === cleanId);
+    
+    if (!req) {
+        showToast('No se encontró ninguna solicitud con ese número interno.', 'error');
+        return;
+    }
+    
+    // Activar modo eliminación y apagar modo edición
+    S.deleteMode = true;
+    S.deleteId = cleanId;
+    S.editMode = false;
+    S.editId = null;
+    
+    // Precargar datos para que el Resumen (Paso 2) los muestre correctamente
+    S.form = {
+        tipo: req.tipo,
+        expediente: req.exp,
+        imputado: req.imputado,
+        victima: req.victima,
+        delito: req.delito,
+        fiscal: req.fiscal,
+        jurisdiccion: req.jur,
+        descripcionSecuestros: req.secuestros,
+        tareassolicitadas: req.tareas,
+        urgencia: req.urgencia
+    };
+    
+    S.modal = 'nueva-solicitud';
+    S.modalStep = 2; // Forzamos ir directo al resumen
+    rmModal();
+};
 
 window.promptEditSolicitud = function() {
     const input = prompt("Ingrese el N° Interno de la solicitud a modificar (ej. 20260248 o GEN-20260248):");
@@ -162,7 +198,15 @@ window.promptEditSolicitud = function() {
     rmModal();
 };
 
-function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud'){S.editMode=false; S.editId=null; S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};} rmModal(); }function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
+function openModal(t){
+    S.modal=t; 
+    S.modalStep=1; 
+    if(t==='nueva-solicitud'){
+        S.editMode=false; S.editId=null; S.deleteMode=false; S.deleteId=null; 
+        S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};
+    } 
+    rmModal(); 
+}
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
 function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
@@ -209,25 +253,38 @@ function updateModalData() {
         document.getElementById('nom-secuestros').value = f.descripcionSecuestros || '';
         document.getElementById('nom-tareas').value = f.tareassolicitadas || '';
 
-        // Bloquear el cambio de "Tipo de solicitud" en modo edición
-        document.getElementById('nom-tipo').disabled = S.editMode;
+        document.getElementById('nom-tipo').disabled = (S.editMode || S.deleteMode);
         
-        // Cambiar título dinámicamente
+        // Título principal
         const titleEl = document.querySelector('.modal-title');
-        if (titleEl) titleEl.innerText = S.editMode ? 'Modificar Solicitud' : 'Registrar Nueva Solicitud';
+        if (titleEl) {
+            if (S.deleteMode) titleEl.innerText = 'Desestimar Solicitud';
+            else if (S.editMode) titleEl.innerText = 'Modificar Solicitud';
+            else titleEl.innerText = 'Registrar Nueva Solicitud';
+        }
 
-        // 2. Controlar visibilidad de pasos (alternando la clase .hidden de tu CSS)
+        // 2. Controlar visibilidad de pasos
         document.getElementById('nom-step-1').classList.toggle('hidden', S.modalStep !== 1);
         document.getElementById('nom-step-2').classList.toggle('hidden', S.modalStep !== 2);
         
-        // 3. Barra de progreso y títulos
-        document.getElementById('nom-modal-sub').innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
-        document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
-        document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+        // 3. Barra de progreso y subtítulos
+        const subEl = document.getElementById('nom-modal-sub');
+        if (subEl) {
+            if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de eliminación';
+            else subEl.innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
+        }
+
+        if (S.deleteMode) {
+            document.getElementById('nom-bar-1').style.background = 'var(--destructive)';
+            document.getElementById('nom-bar-2').style.background = 'var(--destructive)';
+        } else {
+            document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
+            document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+        }
 
         // 4. Renderizar resumen dinámico (Paso 2)
         if (S.modalStep === 2) {
-            const req = S.editMode ? S.solicitudes.find(x => x.id === S.editId) : null;
+            const req = S.deleteMode ? S.solicitudes.find(x => x.id === S.deleteId) : (S.editMode ? S.solicitudes.find(x => x.id === S.editId) : null);
             const lblEstado = req ? (req.estado === 'en-proceso' ? 'En proceso' : (req.estado === 'resuelto' ? 'Resuelto' : 'Pendiente')) : 'Pendiente';
             
             const rows = [
@@ -243,13 +300,47 @@ function updateModalData() {
             document.getElementById('nom-summary-rows').innerHTML = rows.map(([k, v]) => 
                 `<div class="summary-row"><span class="skey">${k}</span><span class="sval">${esc(v)}</span></div>`
             ).join('');
+
+            // Modificar estéticas del resumen y alerta
+            const summaryTitle = document.querySelector('#nom-step-2 .summary-box h3');
+            if (summaryTitle) {
+                if (S.deleteMode) {
+                    summaryTitle.innerText = 'Resumen de la solicitud a desestimar';
+                    summaryTitle.style.color = 'var(--destructive)';
+                } else if (S.editMode) {
+                    summaryTitle.innerText = 'Resumen de la solicitud a modificar';
+                    summaryTitle.style.color = 'var(--primary)';
+                } else {
+                    summaryTitle.innerText = 'Resumen de la solicitud a registrar';
+                    summaryTitle.style.color = 'var(--primary)';
+                }
+            }
+
+            const alertBox = document.querySelector('#nom-step-2 .alert');
+            if (alertBox) {
+                if (S.deleteMode) {
+                    alertBox.className = 'alert alert-error';
+                    alertBox.innerHTML = `${ic('alertC', 16, '#991B1B')} <span><strong>Atención:</strong> Esta acción eliminará el registro físicamente del sistema y no se puede deshacer.</span>`;
+                } else if (S.editMode) {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.innerHTML = `${ic('alertC', 16, '#1D4ED8')} <span>Verifique los datos antes de confirmar la modificación.</span>`;
+                } else {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.innerHTML = `${ic('alertC', 16, '#1D4ED8')} <span>Se asignará automáticamente un N° interno. El estado inicial será <strong>Pendiente</strong>.</span>`;
+                }
+            }
         }
 
         // 5. Botones dinámicos del footer
-        document.getElementById('nom-modal-foot').innerHTML = S.modalStep === 1 
-            ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar ${ic('chevR', 13, 'white')}</button>`
-            : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">${S.editMode ? 'Confirmar modificación' : 'Confirmar registro'}</button>`;
-    } 
+        const foot = document.getElementById('nom-modal-foot');
+        if (S.deleteMode) {
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar eliminación</button>`;
+        } else {
+            foot.innerHTML = S.modalStep === 1 
+                ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar ${ic('chevR', 13, 'white')}</button>`
+                : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">${S.editMode ? 'Confirmar modificación' : 'Confirmar registro'}</button>`;
+        }
+    }
     
     else if (S.modal === 'asignar-perito') {
         const f = S.aForm;
@@ -384,6 +475,24 @@ async function saveOficio(){
   
   nav(S.screen);
 }
+
+window.confirmarEliminacion = async function() {
+    if (!S.deleteMode || !S.deleteId) return;
+    
+    const index = S.solicitudes.findIndex(s => s.id === S.deleteId);
+    if (index === -1) return;
+    
+    const req = S.solicitudes[index];
+    const prefijo = req.tipo === 'narco' ? 'NAR-' : 'GEN-';
+    
+    // Eliminación física
+    S.solicitudes.splice(index, 1);
+    await DB.saveSolicitudes();
+    
+    closeM();
+    showToast(`Solicitud ${prefijo}${req.id} desestimada correctamente.`);
+    nav(S.screen);
+};
 
 async function saveAsig(){
   const f=S.aForm;

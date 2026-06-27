@@ -1,15 +1,74 @@
-<div class="page-header" id="dash-header"></div>
+<div class="page-header" id="dash-header">
+    <div>
+        <div class="page-title" data-dd-title></div>
+        <div class="page-sub" data-dd-sub></div>
+    </div>
+    <div data-dd-actions></div>
+</div>
+
 <div class="stats-grid" id="dash-stats"></div>
-<div class="charts-grid" id="dash-charts"></div>
+
+<div class="charts-grid" id="dash-charts">
+    <div id="dash-cal-card" class="card" style="overflow:hidden;display:flex;flex-direction:column;min-height:400px;">
+        <div class="card-head">
+            <div>
+                <div class="card-title" data-dd-cal-title></div>
+                <div class="card-sub" data-dd-cal-sub></div>
+            </div>
+        </div>
+        <div class="card-body dash-cal-body" style="padding:0;flex:1;"></div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-head">
         <div class="card-title">Solicitudes recientes</div>
-        <button class="btn btn-ghost btn-sm" onclick="nav('causas')">Ver todas <span data-ic="chevR" data-size="13"></span></button>
+        <button class="btn btn-ghost btn-sm" onclick="nav('causas')">Ver todas <span data-ic="chevR"
+                data-size="13"></span></button>
     </div>
     <div class="table-wrap">
         <table>
-            <thead><tr><th>N° Interno</th><th>N° de Legajo de Causa</th><th>Imputado/a</th><th>Delito</th><th>Fiscal</th><th>Circunscripción</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
+            <thead>
+                <tr>
+                    <th>N° Interno</th>
+                    <th>N° de Legajo de Causa</th>
+                    <th>Imputado/a</th>
+                    <th>Delito</th>
+                    <th>Fiscal</th>
+                    <th>Circunscripción</th>
+                    <th>Urgencia</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
             <tbody id="dash-recent-tbody"></tbody>
         </table>
     </div>
 </div>
+
+<template id="stat-card-tpl">
+    <div class="stat-card">
+        <div class="stat-iw" data-si-iw></div>
+        <div class="stat-val" data-si-val></div>
+        <div class="stat-lbl" data-si-lbl></div>
+        <div class="stat-sub" data-si-sub></div>
+    </div>
+</template>
+
+<template id="dash-row-tpl">
+    <tr data-dr-idx>
+        <td class="td-mono" data-dr-id></td>
+        <td style="font-size:12px;color:var(--muted-fg);" data-dr-exp></td>
+        <td>
+            <div class="td-trunc" style="max-width:140px;" data-dr-imp></div>
+        </td>
+        <td>
+            <div class="td-trunc" style="max-width:160px;font-size:12px;color:var(--muted-fg);" data-dr-del></div>
+        </td>
+        <td style="font-size:12px;" data-dr-fis></td>
+        <td style="font-size:12px;" data-dr-jur></td>
+        <td data-dr-urg></td>
+        <td data-dr-est></td>
+        <td><button class="btn-icon" data-dr-eye></button></td>
+    </tr>
+</template>

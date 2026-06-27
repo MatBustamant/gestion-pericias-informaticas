@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
 function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
+function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id};if (o?.fhi) {const d = new Date(o.fhi);if (!isNaN(d)) { S.cal.year = d.getFullYear(); S.cal.month = d.getMonth(); }} rmModal(); }
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
 function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista

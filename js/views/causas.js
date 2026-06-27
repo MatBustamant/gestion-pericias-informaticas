@@ -30,7 +30,7 @@ window.init_causas = function() {
 
   // Resultados
   const sub = document.getElementById('causas-subtitle');
-  sub.textContent = list.length + ' causa' + (list.length !== 1 ? 's' : '') + ' disponible' + (list.length !== 1 ? 's' : '') + (S.causasSearch ? ' para "' + esc(S.causasSearch) + '"' : '');  
+  sub.textContent = list.length + ' solicitud' + (list.length !== 1 ? 'es' : '') + ' disponible' + (list.length !== 1 ? 's' : '') + (S.causasSearch ? ' para "' + esc(S.causasSearch) + '"' : '');  
 
   const empty = document.getElementById('causas-empty');
   const cards = document.getElementById('causas-cards');

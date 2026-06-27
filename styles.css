@@ -341,13 +341,6 @@ tbody tr:hover { background: #F0F6FF; }
 .c-ev-media { background: #FEF3C7; border-left-color: #F59E0B; color: #92400E; }
 .c-ev-baja { background: #D1FAE5; border-left-color: #10B981; color: #065F46; }
 
-/* Actualización de la grilla de asignación para el panel derecho */
-.asig-grid { display: grid; grid-template-columns: 280px 1fr 300px; gap: 20px; }
-@media(max-width: 1200px) { .asig-grid { grid-template-columns: 280px 1fr; } }
-@media(max-width: 900px) { .asig-grid { grid-template-columns: 1fr; } }
-
-.asig-grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
-
 /* Modal Workspace Dual */
 .modal-workspace { display: flex; gap: 20px; align-items: stretch; justify-content: center; width: 100%; max-width: 1050px; padding: 20px; height: 85vh; }
 .modal-panel { background: white; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }

@@ -157,7 +157,7 @@ tbody tr:hover { background: #F0F6FF; }
 .td-trunc { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* BADGES */
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border: 1px solid rgba(0,0,0,.08); border-radius: 999px; font-size: 11px; font-weight: 700; }
 .bp { color: var(--s-pend-c); background: var(--s-pend-bg); }
 .bi { color: var(--s-proc-c); background: var(--s-proc-bg); }
 .br { color: var(--s-done-c); background: var(--s-done-bg); }
@@ -168,6 +168,9 @@ tbody tr:hover { background: #F0F6FF; }
 .pa { background: var(--p-high); }
 .pm { background: var(--p-med); }
 .pb-l { background: var(--p-low); }
+.badge-urgencia { width: clamp(52px, 6vw, 70px); justify-content: center; text-align: center; }
+.badge-estado { width: clamp(75px, 9vw, 95px); justify-content: center; text-align: center; }
+.badges-right { display: flex; gap: 6px; margin-left: auto; }
 
 /* FILTERS */
 .filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
@@ -209,7 +212,6 @@ tbody tr:hover { background: #F0F6FF; }
 /* CAUSAS */
 .causa-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; align-items: flex-start; gap: 16px; cursor: pointer; transition: box-shadow .15s; margin-bottom: 12px; }
 .causa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
-.causa-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
 .causa-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .causa-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted-fg); }
 

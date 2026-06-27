@@ -127,8 +127,42 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
-function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
+
+window.promptEditSolicitud = function() {
+    const input = prompt("Ingrese el N° Interno de la solicitud a modificar (ej. 20260248 o GEN-20260248):");
+    if (!input) return;
+    
+    // Limpiar espacios y posibles prefijos para extraer solo el ID numérico
+    const cleanId = input.replace(/^(GEN-|NAR-)/i, '').trim();
+    
+    const req = S.solicitudes.find(s => s.id === cleanId);
+    if (!req) {
+        showToast('No se encontró ninguna solicitud con ese número interno.', 'error');
+        return;
+    }
+    
+    // Configurar estado en modo edición y precargar datos en S.form
+    S.editMode = true;
+    S.editId = cleanId;
+    S.form = {
+        tipo: req.tipo,
+        expediente: req.exp,
+        imputado: req.imputado,
+        victima: req.victima,
+        delito: req.delito,
+        fiscal: req.fiscal,
+        jurisdiccion: req.jur,
+        descripcionSecuestros: req.secuestros,
+        tareassolicitadas: req.tareas,
+        urgencia: req.urgencia
+    };
+    
+    S.modal = 'nueva-solicitud';
+    S.modalStep = 1;
+    rmModal();
+};
+
+function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud'){S.editMode=false; S.editId=null; S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};} rmModal(); }function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
 function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
@@ -175,6 +209,13 @@ function updateModalData() {
         document.getElementById('nom-secuestros').value = f.descripcionSecuestros || '';
         document.getElementById('nom-tareas').value = f.tareassolicitadas || '';
 
+        // Bloquear el cambio de "Tipo de solicitud" en modo edición
+        document.getElementById('nom-tipo').disabled = S.editMode;
+        
+        // Cambiar título dinámicamente
+        const titleEl = document.querySelector('.modal-title');
+        if (titleEl) titleEl.innerText = S.editMode ? 'Modificar Solicitud' : 'Registrar Nueva Solicitud';
+
         // 2. Controlar visibilidad de pasos (alternando la clase .hidden de tu CSS)
         document.getElementById('nom-step-1').classList.toggle('hidden', S.modalStep !== 1);
         document.getElementById('nom-step-2').classList.toggle('hidden', S.modalStep !== 2);
@@ -186,6 +227,9 @@ function updateModalData() {
 
         // 4. Renderizar resumen dinámico (Paso 2)
         if (S.modalStep === 2) {
+            const req = S.editMode ? S.solicitudes.find(x => x.id === S.editId) : null;
+            const lblEstado = req ? (req.estado === 'en-proceso' ? 'En proceso' : (req.estado === 'resuelto' ? 'Resuelto' : 'Pendiente')) : 'Pendiente';
+            
             const rows = [
                 ['N° de Legajo de Causa', f.expediente || '—'],
                 ['Imputado/a', f.imputado || '—'],
@@ -194,7 +238,7 @@ function updateModalData() {
                 ['Fiscal', f.fiscal || '—'],
                 ['Circunscripción', f.jurisdiccion || '—'],
                 ['Urgencia', f.urgencia],
-                ['Estado (auto)', 'Pendiente']
+                ['Estado actual', lblEstado]
             ];
             document.getElementById('nom-summary-rows').innerHTML = rows.map(([k, v]) => 
                 `<div class="summary-row"><span class="skey">${k}</span><span class="sval">${esc(v)}</span></div>`
@@ -204,7 +248,7 @@ function updateModalData() {
         // 5. Botones dinámicos del footer
         document.getElementById('nom-modal-foot').innerHTML = S.modalStep === 1 
             ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar ${ic('chevR', 13, 'white')}</button>`
-            : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">Confirmar registro</button>`;
+            : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">${S.editMode ? 'Confirmar modificación' : 'Confirmar registro'}</button>`;
     } 
     
     else if (S.modal === 'asignar-perito') {
@@ -305,13 +349,39 @@ function updateModalData() {
 
 async function saveOficio(){
   const f=S.form;
-  if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
-  const id=genId(f.tipo);
-  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
-  closeM();
-  showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+  if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){
+      showToast('Por favor completá todos los campos obligatorios (*).', 'error');
+      return;
+  }
+  
+  if (S.editMode) {
+      // Flujo de Modificación
+      const req = S.solicitudes.find(s => s.id === S.editId);
+      if (req) {
+          req.exp = f.expediente;
+          req.imputado = f.imputado;
+          req.victima = f.victima;
+          req.delito = f.delito;
+          req.fiscal = f.fiscal;
+          req.jur = f.jurisdiccion;
+          req.secuestros = f.descripcionSecuestros;
+          req.tareas = f.tareassolicitadas;
+          req.urgencia = f.urgencia;
+          // Nota: id, tipo, estado, peritos, y fhi quedan INTACTOS.
+      }
+      closeM();
+      showToast(`Solicitud ${(req.tipo==='narco'?'NAR-':'GEN-')}${req.id} modificada exitosamente.`);
+  } else {
+      // Flujo de Nuevo Registro (Original)
+      const id=genId(f.tipo);
+      S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
+      closeM();
+      showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+  }
+  
   await DB.saveSolicitudes();
-  await DB.saveIdCounters();
+  if(!S.editMode) await DB.saveIdCounters(); // Solo incrementar counter si es registro nuevo
+  
   nav(S.screen);
 }
 

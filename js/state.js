@@ -5,19 +5,9 @@ const S = {
   modal:null, modalStep:1, successMsg:'', idCounters: { general: 249, narco: 1 },
   form:{tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'},
   aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: 2026, month: 6 },
-  notifLeidas: {}, editMode: false, editId: null, deleteMode: false, deleteId: null
+  notifLeidas: {}, editMode: false, editId: null, deleteMode: false, deleteId: null,
+  searchAction: null
 };
-
-S.users = [
-  {id:1,nombre:'Laura Suárez',ini:'LS',rol:'perito',username:'laura',password:'perito123',lbl:'Perito Informático'},
-  {id:2,nombre:'Matías Herrera',ini:'MH',rol:'perito',username:'matias',password:'perito123',lbl:'Perito Informático'},
-  {id:3,nombre:'Verónica Castro',ini:'VC',rol:'perito',username:'veronica',password:'perito123',lbl:'Perito Informático'},
-  {id:4,nombre:'Diego Romero',ini:'DR',rol:'perito',username:'diego',password:'perito123',lbl:'Perito Informático'},
-  {id:5,nombre:'Claudia Ríos',ini:'CR',rol:'perito',username:'claudia',password:'perito123',lbl:'Perito Informático'},
-  {id:6,nombre:'Ignacio Palma',ini:'IP',rol:'perito',username:'ignacio',password:'perito123',lbl:'Perito Informático'},
-  {id:7,nombre:'Ana González',ini:'AG',rol:'mesa',username:'ana',password:'mesa123',lbl:'Mesa de Entrada'},
-  {id:8,nombre:'Carlos Méndez',ini:'CM',rol:'coordinador',username:'carlos',password:'coord123',lbl:'Coordinador'}
-];
 
 Object.defineProperty(S, 'peritos', {
   get() { return S.users.filter(u => u.rol === 'perito'); }

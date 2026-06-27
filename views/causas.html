@@ -1,12 +1,65 @@
-<div class="page-header" id="causas-header"></div>
+<div class="page-header">
+    <div>
+        <div class="page-title">Consulta de Solicitudes</div>
+        <div class="page-sub" id="causas-subtitle">0 causas disponibles</div>
+    </div>
+</div>
 <div style="display:flex;gap:10px;margin-bottom:12px;">
     <div class="search-wrap" style="flex:1;">
-        <span class="si">
-            <span data-ic="search" data-size="15"></span>
-        </span>
-        <input type="text" id="causas-search" placeholder="Buscar por N° de Legajo de Causa, N° interno, fiscal, imputado/a, víctima, perito..." oninput="upCS(this.value)">
+        <span class="si"><span data-ic="search" data-size="15"></span></span>
+        <input type="text" id="causas-search" placeholder="Buscar..." oninput="upCS(this.value)">
     </div>
-    <div id="causas-btn-filter" style="display: contents;"></div>
+    <button class="filter-btn" id="causas-btn-filter" onclick="toggleCF()"
+        style="display:flex;align-items:center;gap:6px;">
+        <span data-ic="sliders" data-size="14"></span>
+        Filtros
+        <span id="causas-filter-count" class="hidden"
+            style="width:16px;height:16px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;">0</span>
+    </button>
 </div>
-<div id="causas-panel-filters"></div>
-<div id="causas-list"></div>
+<div id="causas-panel-filters" class="hidden">
+    <div class="filters-panel">
+        <div>
+            <div class="fg-lbl">ESTADO</div>
+            <div class="filter-pills">
+                <button class="filter-btn" data-ce="todos" onclick="setCE('todos')">Todos</button>
+                <button class="filter-btn" data-ce="pendiente" onclick="setCE('pendiente')">Pendiente</button>
+                <button class="filter-btn" data-ce="en-proceso" onclick="setCE('en-proceso')">En proceso</button>
+                <button class="filter-btn" data-ce="resuelto" onclick="setCE('resuelto')">Resuelto</button>
+            </div>
+        </div>
+        <div class="filter-divider"></div>
+        <div>
+            <div class="fg-lbl">URGENCIA</div>
+            <div class="filter-pills">
+                <button class="filter-btn" data-cu="todos" onclick="setCU('todos')">Todas</button>
+                <button class="filter-btn" data-cu="alta" onclick="setCU('alta')">Alta</button>
+                <button class="filter-btn" data-cu="media" onclick="setCU('media')">Media</button>
+                <button class="filter-btn" data-cu="baja" onclick="setCU('baja')">Baja</button>
+            </div>
+        </div>
+        <div class="filter-divider"></div>
+        <div>
+            <div class="fg-lbl">CIRCUNSCRIPCIÓN</div>
+            <div class="filter-pills" id="causas-filter-jur">
+                <button class="filter-btn" data-cj="todos" onclick="setCJ('todos')">Todas</button>
+                <button class="filter-btn" data-cj="Capital" onclick="setCJ('Capital')">Capital</button>
+                <button class="filter-btn" data-cj="La Banda" onclick="setCJ('La Banda')">La Banda</button>
+                <button class="filter-btn" data-cj="Frías" onclick="setCJ('Frías')">Frías</button>
+                <button class="filter-btn" data-cj="Añatuya" onclick="setCJ('Añatuya')">Añatuya</button>
+                <button class="filter-btn" data-cj="Monte Quemado" onclick="setCJ('Monte Quemado')">Monte Quemado</button>
+                <button class="filter-btn" data-cj="Termas" onclick="setCJ('Termas')">Termas</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="causas-empty" class="hidden">
+    <div class="card">
+        <div class="empty-state">
+            <span data-ic="search" data-size="36" data-color="var(--muted-fg)"></span>
+            <p style="font-size:15px;font-weight:500;margin-top:12px;">Sin resultados</p>
+            <p style="font-size:13px;margin-top:4px;">Probá con otros términos o cambiá los filtros</p>
+        </div>
+    </div>
+</div>
+<div id="causas-cards"></div>

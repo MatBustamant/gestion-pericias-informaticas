@@ -26,7 +26,7 @@ public class App {
 
             // Se configura con la clase o el paquete donde están los recursos.
             final ResourceConfig resourceConfig = new ResourceConfig()
-                    .packages("com.grupocapa8.persis.controller");
+                    .packages("com.grupocapa8.persis.controller", "com.grupocapa8.persis.config");
 
             // Con esto se configura el arranque del servidor Grizzly
             final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);

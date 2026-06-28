@@ -4,7 +4,7 @@ const S = {
   mesaSearch:'', mesaEstado:'todos', mesaUrgencia:'todos', mesaJurisdiccion:'todos', mesaShowFilters:false, causasSearch:'', causasEstado:'todos', causasUrgencia:'todos', causasJurisdiccion:'todos', causasShowFilters:false,
   modal:null, modalStep:1, successMsg:'', idCounters: { general: 249, narco: 1 },
   form:{tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'},
-  aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: 2026, month: 6 },
+  aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: new Date().getFullYear(), month: new Date().getMonth() },
   notifLeidas: {}, editMode: false, editId: null, deleteMode: false, deleteId: null,
   searchAction: null
 };

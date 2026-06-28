@@ -105,6 +105,7 @@ async function initApp() {
         COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
         COMPS.card = await fetch('components/card-solicitud.html').then(r => r.text());
+        COMPS.calendar = await fetch('components/calendar.html').then(r => r.text());
 
         await DB.init();
 
@@ -127,6 +128,7 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
+function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id};if (o?.fhi) {const d = new Date(o.fhi);if (!isNaN(d)) { S.cal.year = d.getFullYear(); S.cal.month = d.getMonth(); }} rmModal(); }
 
 window.abrirModalBuscar = function(accion) {
     S.searchAction = accion;
@@ -250,7 +252,7 @@ function updateModalData() {
                 else titleEl.innerText = 'Registrar Nueva Solicitud';
             }
             if (subEl) {
-                if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de eliminación';
+                if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de desestimación';
                 else subEl.innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
             }
         }
@@ -322,7 +324,7 @@ function updateModalData() {
             if (alertBox) {
                 if (S.deleteMode) {
                     alertBox.className = 'alert alert-error';
-                    alertBox.innerHTML = `<span><strong>Atención:</strong> Esta acción eliminará el registro físicamente del sistema y no se puede deshacer.</span>`;
+                    alertBox.innerHTML = `<span><strong>Atención:</strong> Esta acción no se puede deshacer.</span>`;
                 } else if (S.editMode) {
                     alertBox.className = 'alert alert-info';
                     alertBox.innerHTML = `<span>Verifique los datos antes de confirmar la modificación.</span>`;
@@ -338,7 +340,7 @@ function updateModalData() {
         if (S.modalStep === 0) {
             foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="ejecutarBusquedaModal()">Continuar</button>`;
         } else if (S.deleteMode) {
-            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar eliminación</button>`;
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar desestimación</button>`;
         } else {
             foot.innerHTML = S.modalStep === 1 
                 ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar</button>`
@@ -442,10 +444,14 @@ function updateModalData() {
             };
         }
 
-        // MODIFICADO: Inyectar el calendario lateral pasándole las IDs conflictivas Y el evento tentativo
         const calContainer = document.getElementById('am-calendar-container');
         if (calContainer) {
-            calContainer.innerHTML = buildCalendarHTML(overlappingIds, tentativeEvent);
+            calContainer.innerHTML = '';
+            calContainer.appendChild(buildCalendar({
+                conflictIds: overlappingIds,
+                tentativeEvent: tentativeEvent,
+                onMonthChange: () => updateModalData()
+            }));
         }
     }
 }
@@ -521,6 +527,19 @@ async function saveAsig(){
   await DB.saveSolicitudes();
   nav(S.screen);
 }
+
+async function confirmAsig(id) { 
+    const o = S.solicitudes.find(x => x.id === id);
+    
+    if (o && o.estado === 'pendiente') {
+        o.estado = 'en-proceso';
+    }
+
+    await DB.saveSolicitudes();
+    showToast('Asignación confirmada para ' + `${(o.tipo==='narco'?'NAR-':'GEN-')}${id}`, 'success');
+    
+    init_asignacion(); 
+};
 
 function renderNotifBadge() {
     const dot = document.getElementById('notif-dot');

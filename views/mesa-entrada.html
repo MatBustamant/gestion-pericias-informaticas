@@ -1,14 +1,61 @@
-<div class="page-header" id="mesa-header"></div>
-<div class="filter-row">
+<div class="page-header">
+    <div>
+        <div class="page-title">Mesa de Entrada</div>
+        <div class="page-sub" id="mesa-subtitle">0 solicitudes registradas</div>
+    </div>
+    <div style="display:flex; gap:12px;" id="mesa-actions">
+        <button class="btn btn-primary" onclick="abrirModalBuscar('delete')"><span data-ic="x" data-size="15" data-color="white"></span> Desestimar solicitud</button>
+        <button class="btn btn-primary" onclick="abrirModalBuscar('edit')"><span data-ic="edit" data-size="15" data-color="white"></span> Modificar solicitud</button>
+        <button class="btn btn-primary" onclick="openModal('nueva-solicitud')"><span data-ic="plus" data-size="15" data-color="white"></span> Registrar solicitud</button>
+    </div>
+</div>
+<div style="display:flex;gap:10px;margin-bottom:12px;">
     <div class="search-wrap">
-        <span class="si">
-            <span data-ic="search" data-size="15"></span>
-        </span>
+        <span class="si"><span data-ic="search" data-size="15"></span></span>
         <input type="text" id="mesa-search" placeholder="Buscar por N° de Legajo de Causa, N° interno, fiscal, imputado/a, víctima, perito..." oninput="upMS(this.value)">
     </div>
-    <div id="mesa-btn-filter" style="display: contents;"></div>
+    <button class="filter-btn" id="mesa-btn-filter" onclick="toggleMF()" style="display:flex;align-items:center;gap:6px;">
+        <span data-ic="sliders" data-size="14"></span>
+        Filtros
+        <span id="mesa-filter-count" class="hidden" style="width:16px;height:16px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;">0</span>
+    </button>
 </div>
-<div id="mesa-panel-filters"></div>
+<div id="mesa-panel-filters" class="hidden">
+    <div class="filters-panel">
+        <div>
+            <div class="fg-lbl">ESTADO</div>
+            <div class="filter-pills">
+                <button class="filter-btn" data-me="todos" onclick="setME('todos')">Todas</button>
+                <button class="filter-btn" data-me="pendiente" onclick="setME('pendiente')">Pendiente</button>
+                <button class="filter-btn" data-me="en-proceso" onclick="setME('en-proceso')">En proceso</button>
+                <button class="filter-btn" data-me="resuelto" onclick="setME('resuelto')">Resuelto</button>
+            </div>
+        </div>
+        <div class="filter-divider"></div>
+        <div>
+            <div class="fg-lbl">URGENCIA</div>
+            <div class="filter-pills">
+                <button class="filter-btn" data-mu="todos" onclick="setMU('todos')">Todas</button>
+                <button class="filter-btn" data-mu="alta" onclick="setMU('alta')">Alta</button>
+                <button class="filter-btn" data-mu="media" onclick="setMU('media')">Media</button>
+                <button class="filter-btn" data-mu="baja" onclick="setMU('baja')">Baja</button>
+            </div>
+        </div>
+        <div class="filter-divider"></div>
+        <div>
+            <div class="fg-lbl">CIRCUNSCRIPCIÓN</div>
+            <div class="filter-pills">
+                <button class="filter-btn" data-mj="todos" onclick="setMJ('todos')">Todas</button>
+                <button class="filter-btn" data-mj="Capital" onclick="setMJ('Capital')">Capital</button>
+                <button class="filter-btn" data-mj="La Banda" onclick="setMJ('La Banda')">La Banda</button>
+                <button class="filter-btn" data-mj="Frías" onclick="setMJ('Frías')">Frías</button>
+                <button class="filter-btn" data-mj="Añatuya" onclick="setMJ('Añatuya')">Añatuya</button>
+                <button class="filter-btn" data-mj="Monte Quemado" onclick="setMJ('Monte Quemado')">Monte Quemado</button>
+                <button class="filter-btn" data-mj="Termas" onclick="setMJ('Termas')">Termas</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="card" style="margin-bottom:0;">
     <div class="table-wrap">
         <table>
@@ -16,5 +63,25 @@
             <tbody id="mesa-tbody"></tbody>
         </table>
     </div>
-    <div class="pagination" id="mesa-pagination"></div>
+    <div class="pagination" id="mesa-pagination">
+        <span id="mesa-pg-info">Mostrando 0 de 0 solicitudes</span>
+        <div class="page-btns">
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+        </div>
+    </div>
 </div>
+<template id="mesa-row-tpl">
+    <tr data-mr-idx>
+        <td class="td-mono" data-mr-id></td>
+        <td style="font-size:12px;color:var(--muted-fg);" data-mr-exp></td>
+        <td><div class="td-trunc" style="max-width:140px;" data-mr-imp></div></td>
+        <td><div class="td-trunc" style="max-width:160px;font-size:12px;color:var(--muted-fg);" data-mr-del></div></td>
+        <td style="font-size:12px;" data-mr-fis></td>
+        <td style="font-size:12px;" data-mr-jur></td>
+        <td data-mr-urg></td>
+        <td data-mr-est></td>
+        <td><button class="btn-icon" data-mr-eye></button></td>
+    </tr>
+</template>

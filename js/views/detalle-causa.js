@@ -1,16 +1,107 @@
-window.setDT = function(t){ S.detalleTab=t; init_detalle_causa(); };
-
-window.init_detalle_causa = function() {
-  const o=S.solicitudes.find(x=>x.id===S.detailId);
-  const container = document.getElementById('detalle-container');
-  if(!o){ container.innerHTML = '<div class="alert alert-warning">'+ic('alertC',16)+' Solicitud no encontrada.</div>'; return;}
-  if(S.user?.rol === 'perito' && !o.peritos.includes(S.user.nombre)) {
-      container.innerHTML = '<div class="alert alert-warning" style="margin-top: 1rem;">'+ic('lock',16)+' <strong>Acceso denegado:</strong> Esta solicitud pertenece a otro perito y usted no tiene permisos para verla.</div>'; return;
-  }
-  const tabs={info:renderDetalleInfo(o), archivos:renderDetalleArchivos(o)};
-  container.innerHTML = '<div class="detalle-hero"><div class="dhm"><span style="background:rgba(255,255,255,.15);color:white;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;font-family:monospace;">'+(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)+'</span>'+bdg(o.estado)+ubdg(o.urgencia)+'</div><h2 style="font-size:18px;font-weight:700;color:white;margin-bottom:4px;">'+esc(o.imputado)+' s/ '+esc(o.delito)+'</h2><p style="font-size:14px;color:rgba(255,255,255,.65);">'+esc(o.fiscal)+' — '+esc(o.jur)+'</p></div>'+(o.peritos.length===0?'<div class="alert alert-warning">'+ic('alertC',16,'#A16207')+' <span><strong>Sin perito asignado.</strong> Esta solicitud requiere asignaci\u00f3n.</span></div>':'<div class="alert alert-info">'+ic('user',16,'#1D4ED8')+' <span><strong>Perito/s:</strong> '+esc(o.peritos.join(', '))+' — Pericia en curso</span></div>')+'<div class="tabs"><button class="tab-btn'+(S.detalleTab==='info'?' active':'')+'" onclick="setDT(\'info\')">Informaci\u00f3n</button><button class="tab-btn'+(S.detalleTab==='archivos'?' active':'')+'" onclick="setDT(\'archivos\')">Archivos</button></div>'+(tabs[S.detalleTab]||'');
+window.setDT = function(t) {
+  S.detalleTab = t;
+  document.querySelectorAll('[data-dc-tab]').forEach(b =>
+    b.classList.toggle('active', b.dataset.dcTab === t)
+  );
+  document.getElementById('dc-tab-info').classList.toggle('hidden', t !== 'info');
+  document.getElementById('dc-tab-archivos').classList.toggle('hidden', t !== 'archivos');
 };
 
-function renderDetalleInfo(o){ return '<div class="detail-grid"><div><div class="card"><div class="card-head"><div class="card-title">Datos de la solicitud</div></div>'+[{ic:'hash',l:'Nº Interno',v:(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)},{ic:'file',l:'Nº de Legajo de Causa',v:o.exp},{ic:'pin',l:'Circunscripción',v:o.jur},{ic:'tag',l:'Urgencia',v:o.urgencia.charAt(0).toUpperCase()+o.urgencia.slice(1)}].map(r=>'<div class="detail-row"><div>'+ic(r.ic,14,'var(--muted-fg)')+'</div><div><div class="detail-lbl">'+r.l+'</div><div class="detail-val">'+esc(r.v)+'</div></div></div>').join('')+'</div><div class="card mt-4"><div class="card-head"><div class="card-title">Partes procesales</div></div>'+[{l:'Imputado/a',v:o.imputado},{l:'V\u00edctima',v:o.victima},{l:'Delito investigado',v:o.delito},{l:'Fiscal requirente',v:o.fiscal}].map(r=>'<div class="detail-row"><div><div class="detail-lbl">'+r.l+'</div><div class="detail-val">'+esc(r.v)+'</div></div></div>').join('')+'</div></div><div><div class="card"><div class="card-head"><div class="card-title">Asignación pericial</div></div>'+[{l:'Peritos responsables',v:o.peritos.length>0?o.peritos.join(', '):'Sin asignar'},{l:'Fecha/hora apertura de informe',v:o.fhi?fmtDT(o.fhi):'No programada'}].map(r=>'<div class="detail-row"><div><div class="detail-lbl">'+r.l+'</div><div class="detail-val" style="color:'+(r.v.includes('Sin')||r.v.includes('No')?'var(--muted-fg)':'var(--fg)')+';">'+esc(r.v)+'</div></div></div>').join('')+'</div><div class="card mt-4"><div class="card-head"><div class="card-title">Secuestros recibidos</div></div><div class="card-body"><p style="font-size:13px;line-height:1.7;">'+esc(o.secuestros)+'</p></div></div><div class="card mt-4"><div class="card-head"><div class="card-title">Tareas solicitadas</div></div><div class="card-body"><p style="font-size:13px;line-height:1.7;">'+esc(o.tareas)+'</p></div></div>'+'</div></div>'; }
+window.init_detalle_causa = function() {
+  const o = S.solicitudes.find(x => x.id === S.detailId);
+  const container = document.getElementById('detalle-container');
+  if (!o) {
+    container.innerHTML = '<div class="alert alert-warning">' + ic('alertC', 16) + ' Solicitud no encontrada.</div>';
+    return;
+  }
+  if (S.user?.rol === 'perito' && !o.peritos.includes(S.user.nombre)) {
+    container.innerHTML = '<div class="alert alert-warning" style="margin-top: 1rem;">' + ic('lock', 16) + ' <strong>Acceso denegado:</strong> Esta solicitud pertenece a otro perito y usted no tiene permisos para verla.</div>';
+    return;
+  }
 
-function renderDetalleArchivos(o){ const files=[{n:'Solicitud_'+o.id+'.pdf',t:'PDF',s:'2.4 MB'},{n:'Acta_secuestro_'+o.exp+'.pdf',t:'PDF',s:'1.1 MB'}]; return '<div class="card"><div class="card-head"><div class="card-title">Archivos adjuntos</div>'+(S.user?.rol!=='coordinador'?'<button class="btn btn-ghost btn-sm">'+ic('clip',13)+' Adjuntar</button>':'')+'</div><div class="card-body">'+files.map(a=>'<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);"><div style="width:36px;height:36px;background:#FEF2F2;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic('file',16,'#DC2626')+'</div><div style="flex:1;"><div style="font-size:13px;font-weight:500;">'+esc(a.n)+'</div><div style="font-size:11px;color:var(--muted-fg);">'+a.t+' · '+a.s+'</div></div><button class="btn-icon">'+ic('dl',15)+'</button></div>').join('')+'</div></div>'; }
+  // Hero
+  container.querySelector('[data-dc-id]').textContent = (o.tipo === 'narco' ? 'NAR-' : 'GEN-') + o.id;
+  container.querySelector('[data-dc-estado]').innerHTML = bdg(o.estado);
+  container.querySelector('[data-dc-urgencia]').innerHTML = ubdg(o.urgencia);
+  container.querySelector('[data-dc-title]').textContent = o.imputado + ' s/ ' + o.delito;
+  container.querySelector('[data-dc-subtitle]').textContent = o.fiscal + ' — ' + o.jur;
+
+  // Perito alert
+  const alert = document.getElementById('dc-alert');
+  if (o.peritos.length === 0) {
+    alert.className = 'alert alert-warning';
+    alert.innerHTML = ic('alertC', 16, '#A16207') + ' <span><strong>Sin perito asignado.</strong> Esta solicitud requiere asignación.</span>';
+  } else {
+    alert.className = 'alert alert-info';
+    alert.innerHTML = ic('user', 16, '#1D4ED8') + ' <span><strong>Perito/s:</strong> ' + esc(o.peritos.join(', ')) + ' — Pericia en curso</span>';
+  }
+
+  // Rellenar rows con template
+  const tpl = document.getElementById('detail-row-tpl');
+
+  function fillRows(section, rows) {
+    const el = container.querySelector('[data-dc-' + section + ']');
+    el.innerHTML = '';
+    rows.forEach(r => {
+      const item = tpl.content.cloneNode(true);
+      if (r.ic) {
+        item.querySelector('[data-dr-icon]').innerHTML = ic(r.ic, 14, 'var(--muted-fg)');
+      } else {
+        item.querySelector('[data-dr-icon]').style.display = 'none';
+      }
+      item.querySelector('[data-dr-lbl]').textContent = r.l;
+      const valEl = item.querySelector('[data-dr-val]');
+      valEl.textContent = r.v;
+      if (r.muted) valEl.style.color = 'var(--muted-fg)';
+      el.appendChild(item);
+    });
+  }
+
+  fillRows('solicitud', [
+    { ic: 'hash', l: 'Nº Interno', v: (o.tipo === 'narco' ? 'NAR-' : 'GEN-') + o.id },
+    { ic: 'file', l: 'Nº de Legajo de Causa', v: o.exp },
+    { ic: 'pin', l: 'Circunscripción', v: o.jur },
+    { ic: 'tag', l: 'Urgencia', v: o.urgencia.charAt(0).toUpperCase() + o.urgencia.slice(1) }
+  ]);
+
+  fillRows('partes', [
+    { l: 'Imputado/a', v: o.imputado },
+    { l: 'Víctima', v: o.victima },
+    { l: 'Delito investigado', v: o.delito },
+    { l: 'Fiscal requirente', v: o.fiscal }
+  ]);
+
+  fillRows('asignacion', [
+    { l: 'Peritos responsables', v: o.peritos.length > 0 ? o.peritos.join(', ') : 'Sin asignar', muted: o.peritos.length === 0 },
+    { l: 'Fecha/hora apertura de informe', v: o.fhi ? fmtDT(o.fhi) : 'No programada', muted: !o.fhi }
+  ]);
+
+  // Secuestros y tareas
+  container.querySelector('[data-dc-secuestros]').innerHTML = esc(o.secuestros);
+  container.querySelector('[data-dc-tareas]').innerHTML = esc(o.tareas);
+
+  // Archivos
+  const adjuntarEl = container.querySelector('[data-dc-adjuntar]');
+  adjuntarEl.innerHTML = S.user?.rol !== 'coordinador'
+    ? '<button class="btn btn-ghost btn-sm">' + ic('clip', 13) + ' Adjuntar</button>'
+    : '';
+
+  const files = [
+    { n: 'Solicitud_' + o.id + '.pdf', t: 'PDF', s: '2.4 MB' },
+    { n: 'Acta_secuestro_' + o.exp + '.pdf', t: 'PDF', s: '1.1 MB' }
+  ];
+  const fileListEl = container.querySelector('[data-dc-archivos-list]');
+  fileListEl.innerHTML = '';
+  const fileTpl = document.getElementById('file-row-tpl');
+  files.forEach(f => {
+    const item = fileTpl.content.cloneNode(true);
+    item.querySelector('[data-fi-icon]').innerHTML = ic('file', 16, '#DC2626');
+    item.querySelector('[data-fi-name]').textContent = f.n;
+    item.querySelector('[data-fi-meta]').textContent = f.t + ' · ' + f.s;
+    item.querySelector('[data-fi-dl]').innerHTML = ic('dl', 15);
+    fileListEl.appendChild(item);
+  });
+
+  // Restaurar tab activo
+  setDT(S.detalleTab || 'info');
+};

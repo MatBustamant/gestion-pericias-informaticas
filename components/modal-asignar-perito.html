@@ -14,7 +14,7 @@
                 <div class="form-row">
                     <label>Fecha y hora programada para apertura del informe *</label>
                     <input type="datetime-local" id="am-fhi"
-                        oninput="S.aForm.fechaHoraInforme=this.value; updateModalData();">
+                            oninput="S.aForm.fechaHoraInforme=this.value;if(this.value){var d=new Date(this.value);if(!isNaN(d)){S.cal.year=d.getFullYear();S.cal.month=d.getMonth();}}updateModalData();">
                 </div>
                 <div class="form-row">
                     <label>Buscar y seleccionar peritos *</label>

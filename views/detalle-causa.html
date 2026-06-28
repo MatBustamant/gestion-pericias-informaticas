@@ -1,1 +1,74 @@
-<div id="detalle-container"></div>
+<div id="detalle-container">
+  <div class="detalle-hero">
+    <div class="dhm">
+      <span style="background:rgba(255,255,255,.15);color:white;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;font-family:monospace;" data-dc-id></span>
+      <span data-dc-estado></span>
+      <span data-dc-urgencia></span>
+    </div>
+    <h2 style="font-size:18px;font-weight:700;color:white;margin-bottom:4px;" data-dc-title></h2>
+    <p style="font-size:14px;color:rgba(255,255,255,.65);" data-dc-subtitle></p>
+  </div>
+  <div id="dc-alert" class="hidden"></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-dc-tab="info" onclick="setDT('info')">Información</button>
+    <button class="tab-btn" data-dc-tab="archivos" onclick="setDT('archivos')">Archivos</button>
+  </div>
+  <div id="dc-tab-info">
+    <div class="detail-grid">
+      <div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Datos de la solicitud</div></div>
+          <div data-dc-solicitud></div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-head"><div class="card-title">Partes procesales</div></div>
+          <div data-dc-partes></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Asignación pericial</div></div>
+          <div data-dc-asignacion></div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-head"><div class="card-title">Secuestros recibidos</div></div>
+          <div class="card-body"><p style="font-size:13px;line-height:1.7;" data-dc-secuestros></p></div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-head"><div class="card-title">Tareas solicitadas</div></div>
+          <div class="card-body"><p style="font-size:13px;line-height:1.7;" data-dc-tareas></p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="dc-tab-archivos" class="hidden">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Archivos adjuntos</div>
+        <div data-dc-adjuntar></div>
+      </div>
+      <div class="card-body" data-dc-archivos-list></div>
+    </div>
+  </div>
+</div>
+<template id="detail-row-tpl">
+  <div class="detail-row">
+    <div data-dr-icon></div>
+    <div>
+      <div class="detail-lbl" data-dr-lbl></div>
+      <div class="detail-val" data-dr-val></div>
+    </div>
+  </div>
+</template>
+<template id="file-row-tpl">
+  <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+    <div style="width:36px;height:36px;background:#FEF2F2;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <span data-fi-icon></span>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:500;" data-fi-name></div>
+      <div style="font-size:11px;color:var(--muted-fg);" data-fi-meta></div>
+    </div>
+    <button class="btn-icon" data-fi-dl></button>
+  </div>
+</template>

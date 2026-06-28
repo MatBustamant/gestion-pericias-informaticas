@@ -182,7 +182,7 @@ tbody tr:hover { background: #F0F6FF; }
 .badges-right { display: flex; gap: 6px; margin-left: auto; }
 
 /* FILTERS */
-.filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+.filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; } /*TO DO: ACTUALIZAR clase para que tenga sentido con los nuevos estilos que sí se usan*/
 .search-wrap { position: relative; flex: 1; min-width: 200px; }
 .search-wrap .si { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted-fg); pointer-events: none; display: flex; }
 .search-wrap input { padding-left: 34px; border: 1px solid var(--border); background: white; }

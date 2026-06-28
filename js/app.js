@@ -252,7 +252,7 @@ function updateModalData() {
                 else titleEl.innerText = 'Registrar Nueva Solicitud';
             }
             if (subEl) {
-                if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de eliminación';
+                if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de desestimación';
                 else subEl.innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
             }
         }
@@ -324,7 +324,7 @@ function updateModalData() {
             if (alertBox) {
                 if (S.deleteMode) {
                     alertBox.className = 'alert alert-error';
-                    alertBox.innerHTML = `<span><strong>Atención:</strong> Esta acción eliminará el registro físicamente del sistema y no se puede deshacer.</span>`;
+                    alertBox.innerHTML = `<span><strong>Atención:</strong> Esta acción no se puede deshacer.</span>`;
                 } else if (S.editMode) {
                     alertBox.className = 'alert alert-info';
                     alertBox.innerHTML = `<span>Verifique los datos antes de confirmar la modificación.</span>`;
@@ -340,7 +340,7 @@ function updateModalData() {
         if (S.modalStep === 0) {
             foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="ejecutarBusquedaModal()">Continuar</button>`;
         } else if (S.deleteMode) {
-            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar eliminación</button>`;
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar desestimación</button>`;
         } else {
             foot.innerHTML = S.modalStep === 1 
                 ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar</button>`

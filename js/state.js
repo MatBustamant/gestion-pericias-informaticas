@@ -5,7 +5,7 @@ const S = {
   modal:null, modalStep:1, successMsg:'', idCounters: { general: 249, narco: 1 },
   form:{tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'},
   aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: new Date().getFullYear(), month: new Date().getMonth() },
-  notifLeidas: {}, editMode: false, editId: null, deleteMode: false, deleteId: null,
+  notifLeidas: {}, editMode: false, editId: null, editTipo: null, deleteMode: false, deleteId: null, deleteTipo: null,
   searchAction: null
 };
 

@@ -132,8 +132,8 @@ function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-pe
 
 window.abrirModalBuscar = function(accion) {
     S.searchAction = accion;
-    S.editMode = false;
-    S.deleteMode = false;
+    S.editMode = false; S.editTipo = null;
+    S.deleteMode = false; S.deleteTipo = null;
     S.editId = null;
     S.deleteId = null;
     
@@ -154,13 +154,30 @@ window.ejecutarBusquedaModal = function() {
         return;
     }
     
-    const cleanId = input.replace(/^(GEN-|NAR-)/i, '').trim();
-    const req = S.solicitudes.find(s => s.id === cleanId);
+    const match = input.match(/^(GEN-|NAR-)?\s*(\d+)/i);
+    if (!match) {
+        showToast('Formato inválido. Usá GEN-XXXXX o NAR-XXXXX.', 'error');
+        return;
+    }
     
-    if (!req) {
+    const prefix = match[1] ? match[1].toUpperCase() : null;
+    const cleanId = match[2];
+    const tipoFiltro = prefix === 'NAR-' ? 'narco' : (prefix === 'GEN-' ? 'general' : null);
+    
+    let candidates = S.solicitudes;
+    if (tipoFiltro) candidates = candidates.filter(s => s.tipo === tipoFiltro);
+    candidates = candidates.filter(s => s.id === cleanId);
+    
+    if (candidates.length === 0) {
         showToast('No se encontró ninguna solicitud con ese número interno.', 'error');
         return;
     }
+    if (candidates.length > 1) {
+        showToast('El ID existe en múltiples tipos. Usá el prefijo GEN- o NAR-.', 'error');
+        return;
+    }
+    
+    const req = candidates[0];
     
     S.form = {
         tipo: req.tipo, expediente: req.exp, imputado: req.imputado, victima: req.victima,
@@ -169,23 +186,23 @@ window.ejecutarBusquedaModal = function() {
     };
     
     if (S.searchAction === 'edit') {
-        S.editMode = true; S.editId = cleanId;
-        S.deleteMode = false; S.deleteId = null;
-        S.modalStep = 1; // Avanza al formulario
+        S.editMode = true; S.editId = cleanId; S.editTipo = req.tipo;
+        S.deleteMode = false; S.deleteId = null; S.deleteTipo = null;
+        S.modalStep = 1;
     } else if (S.searchAction === 'delete') {
-        S.deleteMode = true; S.deleteId = cleanId;
-        S.editMode = false; S.editId = null;
-        S.modalStep = 2; // Avanza directo al resumen rojo
+        S.deleteMode = true; S.deleteId = cleanId; S.deleteTipo = req.tipo;
+        S.editMode = false; S.editId = null; S.editTipo = null;
+        S.modalStep = 2;
     }
     
-    rmModal(); // Repintar el modal con el nuevo paso
+    rmModal();
 };
 
 function openModal(t){
     S.modal=t; 
     S.modalStep=1; 
     if(t==='nueva-solicitud'){
-        S.editMode=false; S.editId=null; S.deleteMode=false; S.deleteId=null; 
+        S.editMode=false; S.editId=null; S.editTipo=null; S.deleteMode=false; S.deleteId=null; S.deleteTipo=null; 
         S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};
     } 
     rmModal(); 
@@ -296,11 +313,12 @@ function updateModalData() {
 
         // 6. Resumen (Paso 2)
         if (S.modalStep === 2) {
-            const req = S.deleteMode ? S.solicitudes.find(x => x.id === S.deleteId) : (S.editMode ? S.solicitudes.find(x => x.id === S.editId) : null);
+            const req = S.deleteMode ? S.solicitudes.find(x => x.id === S.deleteId && x.tipo === S.deleteTipo) : (S.editMode ? S.solicitudes.find(x => x.id === S.editId && x.tipo === S.editTipo) : null);
             const lblEstado = req ? (req.estado === 'en-proceso' ? 'En proceso' : (req.estado === 'resuelto' ? 'Resuelto' : 'Pendiente')) : 'Pendiente';
             
             const rows = [
                 ['N° de Legajo de Causa', f.expediente || '—'],
+                ['Tipo de Solicitud', f.tipo === 'narco' ? 'Narco Menudeo' : 'General'],
                 ['Imputado/a', f.imputado || '—'],
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],
@@ -465,7 +483,7 @@ async function saveOficio(){
   
   if (S.editMode) {
       // Flujo de Modificación
-      const req = S.solicitudes.find(s => s.id === S.editId);
+      const req = S.solicitudes.find(s => s.id === S.editId && s.tipo === S.editTipo);
       if (req) {
           req.exp = f.expediente;
           req.imputado = f.imputado;
@@ -497,7 +515,7 @@ async function saveOficio(){
 window.confirmarEliminacion = async function() {
     if (!S.deleteMode || !S.deleteId) return;
     
-    const index = S.solicitudes.findIndex(s => s.id === S.deleteId);
+    const index = S.solicitudes.findIndex(s => s.id === S.deleteId && s.tipo === S.deleteTipo);
     if (index === -1) return;
     
     const req = S.solicitudes[index];

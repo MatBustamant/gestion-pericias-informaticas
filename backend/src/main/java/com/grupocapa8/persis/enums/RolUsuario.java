@@ -11,7 +11,8 @@ package com.grupocapa8.persis.enums;
 public enum RolUsuario {
     MESA_ENTRADA,
     PERITO,
-    COORDINADOR;
+    COORDINADOR,
+    ADMIN;
     
     @Override
     public String toString() {

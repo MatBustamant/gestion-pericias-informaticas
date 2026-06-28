@@ -127,8 +127,67 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
-function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
+
+window.abrirModalBuscar = function(accion) {
+    S.searchAction = accion;
+    S.editMode = false;
+    S.deleteMode = false;
+    S.editId = null;
+    S.deleteId = null;
+    
+    // Invocamos el modal que YA sabemos que funciona
+    S.modal = 'nueva-solicitud';
+    S.modalStep = 0; // Usamos un "Paso 0" personalizado para la búsqueda
+    
+    rmModal();
+};
+
+window.ejecutarBusquedaModal = function() {
+    const inputEl = document.getElementById('search-id-input');
+    if (!inputEl) return;
+    
+    const input = inputEl.value.trim();
+    if (!input) {
+        showToast('Por favor, ingrese un número interno.', 'error');
+        return;
+    }
+    
+    const cleanId = input.replace(/^(GEN-|NAR-)/i, '').trim();
+    const req = S.solicitudes.find(s => s.id === cleanId);
+    
+    if (!req) {
+        showToast('No se encontró ninguna solicitud con ese número interno.', 'error');
+        return;
+    }
+    
+    S.form = {
+        tipo: req.tipo, expediente: req.exp, imputado: req.imputado, victima: req.victima,
+        delito: req.delito, fiscal: req.fiscal, jurisdiccion: req.jur,
+        descripcionSecuestros: req.secuestros, tareassolicitadas: req.tareas, urgencia: req.urgencia
+    };
+    
+    if (S.searchAction === 'edit') {
+        S.editMode = true; S.editId = cleanId;
+        S.deleteMode = false; S.deleteId = null;
+        S.modalStep = 1; // Avanza al formulario
+    } else if (S.searchAction === 'delete') {
+        S.deleteMode = true; S.deleteId = cleanId;
+        S.editMode = false; S.editId = null;
+        S.modalStep = 2; // Avanza directo al resumen rojo
+    }
+    
+    rmModal(); // Repintar el modal con el nuevo paso
+};
+
+function openModal(t){
+    S.modal=t; 
+    S.modalStep=1; 
+    if(t==='nueva-solicitud'){
+        S.editMode=false; S.editId=null; S.deleteMode=false; S.deleteId=null; 
+        S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};
+    } 
+    rmModal(); 
+}
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
 function closeMOI(e){if(e.target.id==='moverlay')closeM();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
@@ -163,7 +222,7 @@ function updateModalData() {
     if (S.modal === 'nueva-solicitud') {
         const f = S.form;
         
-        // 1. Setear valores de los inputs (Paso 1)
+        // 1. Setear valores
         document.getElementById('nom-tipo').value = f.tipo || 'general';
         document.getElementById('nom-expediente').value = f.expediente || '';
         document.getElementById('nom-urgencia').value = f.urgencia || 'media';
@@ -175,17 +234,69 @@ function updateModalData() {
         document.getElementById('nom-secuestros').value = f.descripcionSecuestros || '';
         document.getElementById('nom-tareas').value = f.tareassolicitadas || '';
 
-        // 2. Controlar visibilidad de pasos (alternando la clase .hidden de tu CSS)
+        document.getElementById('nom-tipo').disabled = (S.editMode || S.deleteMode);
+        
+        // 2. Controlar textos dinámicos
+        const titleEl = document.querySelector('.modal-title');
+        const subEl = document.getElementById('nom-modal-sub');
+        
+        if (S.modalStep === 0) {
+            if (titleEl) titleEl.innerText = 'Buscar Solicitud';
+            if (subEl) subEl.innerText = 'Ingrese el identificador del registro';
+        } else {
+            if (titleEl) {
+                if (S.deleteMode) titleEl.innerText = 'Desestimar Solicitud';
+                else if (S.editMode) titleEl.innerText = 'Modificar Solicitud';
+                else titleEl.innerText = 'Registrar Nueva Solicitud';
+            }
+            if (subEl) {
+                if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de eliminación';
+                else subEl.innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
+            }
+        }
+
+        // 3. Crear contenedor de Búsqueda (Paso 0) dinámicamente si no existe
+        let searchBox = document.getElementById('nom-step-0');
+        if (!searchBox) {
+            const step1 = document.getElementById('nom-step-1');
+            if (step1) {
+                searchBox = document.createElement('div');
+                searchBox.id = 'nom-step-0';
+                searchBox.innerHTML = `
+                    <div class="alert alert-info" style="margin-bottom: 16px;">
+                        <span><strong>ⓘ</strong> Indique el número correlativo o el código con su prefijo (GEN- o NAR-).</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Número Interno *</label>
+                        <input type="text" id="search-id-input" class="form-control" placeholder="Ej. 20260248 o GEN-20260248" style="width: 100%;" autocomplete="off">
+                    </div>
+                `;
+                step1.parentNode.insertBefore(searchBox, step1);
+            }
+        }
+
+        // 4. Mostrar/Ocultar los pasos correspondientes
+        if (searchBox) searchBox.classList.toggle('hidden', S.modalStep !== 0);
         document.getElementById('nom-step-1').classList.toggle('hidden', S.modalStep !== 1);
         document.getElementById('nom-step-2').classList.toggle('hidden', S.modalStep !== 2);
         
-        // 3. Barra de progreso y títulos
-        document.getElementById('nom-modal-sub').innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
-        document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
-        document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+        // 5. Barra de progreso
+        if (S.modalStep === 0) {
+            document.getElementById('nom-bar-1').style.background = 'var(--border)';
+            document.getElementById('nom-bar-2').style.background = 'var(--border)';
+        } else if (S.deleteMode) {
+            document.getElementById('nom-bar-1').style.background = 'var(--destructive)';
+            document.getElementById('nom-bar-2').style.background = 'var(--destructive)';
+        } else {
+            document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
+            document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+        }
 
-        // 4. Renderizar resumen dinámico (Paso 2)
+        // 6. Resumen (Paso 2)
         if (S.modalStep === 2) {
+            const req = S.deleteMode ? S.solicitudes.find(x => x.id === S.deleteId) : (S.editMode ? S.solicitudes.find(x => x.id === S.editId) : null);
+            const lblEstado = req ? (req.estado === 'en-proceso' ? 'En proceso' : (req.estado === 'resuelto' ? 'Resuelto' : 'Pendiente')) : 'Pendiente';
+            
             const rows = [
                 ['N° de Legajo de Causa', f.expediente || '—'],
                 ['Imputado/a', f.imputado || '—'],
@@ -194,18 +305,54 @@ function updateModalData() {
                 ['Fiscal', f.fiscal || '—'],
                 ['Circunscripción', f.jurisdiccion || '—'],
                 ['Urgencia', f.urgencia],
-                ['Estado (auto)', 'Pendiente']
+                ['Estado actual', lblEstado]
             ];
             document.getElementById('nom-summary-rows').innerHTML = rows.map(([k, v]) => 
                 `<div class="summary-row"><span class="skey">${k}</span><span class="sval">${esc(v)}</span></div>`
             ).join('');
+
+            const summaryTitle = document.querySelector('#nom-step-2 .summary-box h3');
+            if (summaryTitle) {
+                if (S.deleteMode) { summaryTitle.innerText = 'Resumen de la solicitud a desestimar'; summaryTitle.style.color = 'var(--destructive)'; }
+                else if (S.editMode) { summaryTitle.innerText = 'Resumen de la solicitud a modificar'; summaryTitle.style.color = 'var(--primary)'; }
+                else { summaryTitle.innerText = 'Resumen de la solicitud a registrar'; summaryTitle.style.color = 'var(--primary)'; }
+            }
+
+            const alertBox = document.querySelector('#nom-step-2 .alert');
+            if (alertBox) {
+                if (S.deleteMode) {
+                    alertBox.className = 'alert alert-error';
+                    alertBox.innerHTML = `<span><strong>Atención:</strong> Esta acción eliminará el registro físicamente del sistema y no se puede deshacer.</span>`;
+                } else if (S.editMode) {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.innerHTML = `<span>Verifique los datos antes de confirmar la modificación.</span>`;
+                } else {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.innerHTML = `<span>Se asignará automáticamente un N° interno. El estado inicial será <strong>Pendiente</strong>.</span>`;
+                }
+            }
         }
 
-        // 5. Botones dinámicos del footer
-        document.getElementById('nom-modal-foot').innerHTML = S.modalStep === 1 
-            ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar ${ic('chevR', 13, 'white')}</button>`
-            : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">Confirmar registro</button>`;
-    } 
+        // 7. Botones del footer
+        const foot = document.getElementById('nom-modal-foot');
+        if (S.modalStep === 0) {
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="ejecutarBusquedaModal()">Continuar</button>`;
+        } else if (S.deleteMode) {
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar eliminación</button>`;
+        } else {
+            foot.innerHTML = S.modalStep === 1 
+                ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar</button>`
+                : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">${S.editMode ? 'Confirmar modificación' : 'Confirmar registro'}</button>`;
+        }
+
+        // 8. Foco de accesibilidad
+        if (S.modalStep === 0) {
+            setTimeout(() => {
+                const input = document.getElementById('search-id-input');
+                if (input) input.focus();
+            }, 50);
+        }
+    }
     
     else if (S.modal === 'asignar-perito') {
         const f = S.aForm;
@@ -305,15 +452,59 @@ function updateModalData() {
 
 async function saveOficio(){
   const f=S.form;
-  if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
-  const id=genId(f.tipo);
-  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
-  closeM();
-  showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+  if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){
+      showToast('Por favor completá todos los campos obligatorios (*).', 'error');
+      return;
+  }
+  
+  if (S.editMode) {
+      // Flujo de Modificación
+      const req = S.solicitudes.find(s => s.id === S.editId);
+      if (req) {
+          req.exp = f.expediente;
+          req.imputado = f.imputado;
+          req.victima = f.victima;
+          req.delito = f.delito;
+          req.fiscal = f.fiscal;
+          req.jur = f.jurisdiccion;
+          req.secuestros = f.descripcionSecuestros;
+          req.tareas = f.tareassolicitadas;
+          req.urgencia = f.urgencia;
+          // Nota: id, tipo, estado, peritos, y fhi quedan INTACTOS.
+      }
+      closeM();
+      showToast(`Solicitud ${(req.tipo==='narco'?'NAR-':'GEN-')}${req.id} modificada exitosamente.`);
+  } else {
+      // Flujo de Nuevo Registro (Original)
+      const id=genId(f.tipo);
+      S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
+      closeM();
+      showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+  }
+  
   await DB.saveSolicitudes();
-  await DB.saveIdCounters();
+  if(!S.editMode) await DB.saveIdCounters(); // Solo incrementar counter si es registro nuevo
+  
   nav(S.screen);
 }
+
+window.confirmarEliminacion = async function() {
+    if (!S.deleteMode || !S.deleteId) return;
+    
+    const index = S.solicitudes.findIndex(s => s.id === S.deleteId);
+    if (index === -1) return;
+    
+    const req = S.solicitudes[index];
+    const prefijo = req.tipo === 'narco' ? 'NAR-' : 'GEN-';
+    
+    // Eliminación física
+    S.solicitudes.splice(index, 1);
+    await DB.saveSolicitudes();
+    
+    closeM();
+    showToast(`Solicitud ${prefijo}${req.id} desestimada correctamente.`);
+    nav(S.screen);
+};
 
 async function saveAsig(){
   const f=S.aForm;

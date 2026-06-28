@@ -16,9 +16,6 @@ window.init_dashboard = function() {
   const hoy = new Date();
   const fecha = diasemana[hoy.getDay()] + ' ' + hoy.getDate() + ' de ' + meses[hoy.getMonth()] + ' de ' + hoy.getFullYear();
   document.querySelector('[data-dd-sub]').textContent = fecha + ' — Sistema de gestión de peritos informáticos';
-  document.querySelector('[data-dd-actions]').innerHTML = r === 'mesa'
-    ? '<button class="btn btn-primary" onclick="openModal(\'nueva-solicitud\')">' + ic('plus', 15, 'white') + ' Nueva solicitud</button>'
-    : '';
 
   // ---- ESTADÍSTICAS ----
   const stats = (r === 'mesa' || r === 'coordinador')

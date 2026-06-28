@@ -318,6 +318,7 @@ function updateModalData() {
             
             const rows = [
                 ['N° de Legajo de Causa', f.expediente || '—'],
+                ['Tipo de Solicitud', f.tipo === 'narco' ? 'Narco Menudeo' : 'General'],
                 ['Imputado/a', f.imputado || '—'],
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],

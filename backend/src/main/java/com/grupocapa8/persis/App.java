@@ -4,8 +4,10 @@
 
 package com.grupocapa8.persis;
 
+import com.grupocapa8.persis.config.BaseDeDatos;
 import java.io.IOException;
 import java.net.URI;
+import java.sql.SQLException;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -34,13 +36,16 @@ public class App {
 
             // Con esto arrancamos el servidor Grizzly
             server.start();
+            
+            BaseDeDatos.getConnection();
+            System.out.println("Base de datos inicializada.");
 
             System.out.println(String.format("Servidor iniciado.\nAPI disponible en %s\nPresione CTRL+C para detener.",
                     BASE_URI));
 
             // Para que no termine la ejecución cuando estas líneas acaban
             Thread.currentThread().join();
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException | SQLException | InterruptedException ex) {
             System.getLogger(App.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }

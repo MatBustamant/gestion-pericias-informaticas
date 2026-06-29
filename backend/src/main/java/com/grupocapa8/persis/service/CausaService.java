@@ -27,7 +27,11 @@ public class CausaService implements ServiceGenerico<Causa> {
     }
     
     public Causa buscarPorNumExpediente(String numExpediente) {
-        return causaDAO.buscarPorNumExpediente(numExpediente);  // null si no existe
+        Causa causa = causaDAO.buscarPorNumExpediente(numExpediente);
+        if (causa == null) {
+            throw new NoSuchElementException("No existe la causa con exp. " + numExpediente);
+        }
+        return causa;
     }
 
     @Override

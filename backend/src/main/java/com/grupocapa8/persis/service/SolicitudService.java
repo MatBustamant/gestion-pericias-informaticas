@@ -10,9 +10,9 @@ import com.grupocapa8.persis.dto.SolicitudRequest;
 import com.grupocapa8.persis.enums.EstadoSolicitud;
 import com.grupocapa8.persis.model.Causa;
 import com.grupocapa8.persis.model.Solicitud;
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -26,13 +26,13 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
     @Override
     public SolicitudRequest buscar(int id) throws NoSuchElementException {
         Solicitud s = solicitudDAO.buscarPorId(id);
-        if (s == null) throw new NoSuchElementException("No existe la solicitud");
+        if (s == null) throw new NoSuchElementException("No existe la solicitud con id "+id);
         return armarResponse(s);
     }
     
     public SolicitudRequest buscarPorNumInterno(int numInterno, int anio, String tipo) {
         Solicitud s = solicitudDAO.buscarPorNumInterno(numInterno, anio, tipo);
-        if (s == null) return null;
+        if (s == null) throw new NoSuchElementException("No existe la solicitud");
         return armarResponse(s);
     }
 
@@ -62,6 +62,7 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
         }
         // 3. Asignar causa a solicitud y setear defaults
         req.getSolicitud().setCausa(causa);
+        req.getSolicitud().setAño(java.time.Year.now().getValue());
         req.getSolicitud().setEstado(EstadoSolicitud.PENDIENTE);
         req.getSolicitud().setFechaApertura(null);
         // 4. Insertar solicitud
@@ -73,8 +74,9 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
         // 1. Obtener solicitud actual
         Solicitud actual = solicitudDAO.buscarPorId(id);
         // 2. Si cambió el numExpediente → buscar o crear nueva causa
+        Causa causaActual = causaDAO.buscarPorId(actual.getCausa().getId());
         String nuevoExp = req.getCausa().getNumExpediente();
-        if (!nuevoExp.equals(actual.getCausa().getNumExpediente())) {
+        if (!nuevoExp.equals(causaActual.getNumExpediente())) {
             Causa causa = causaDAO.buscarPorNumExpediente(nuevoExp);
             if (causa == null) {
                 int idCausa = causaDAO.insertar(req.getCausa());

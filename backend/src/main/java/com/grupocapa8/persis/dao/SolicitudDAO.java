@@ -72,7 +72,7 @@ public class SolicitudDAO {
         return lista;
     }
 
-    public int insertar(Solicitud s, List<Integer> peritosIds, String tareasSolicitadas) {
+    public Solicitud insertar(Solicitud s, List<Integer> peritosIds, String tareasSolicitadas) {
         Connection con = null;
         try {
             con = BaseDeDatos.getConnection();
@@ -139,11 +139,11 @@ public class SolicitudDAO {
             }
 
             con.commit();
-            return s.getId();
+            return s;
         } catch (SQLException ex) {
             try { if (con != null) con.rollback(); } catch (SQLException e) { /* ignore */ }
             System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-            return -1;
+            return null;
         } finally {
             try { if (con != null) { con.setAutoCommit(true); con.close(); } } catch (SQLException e) { /* ignore */ }
         }

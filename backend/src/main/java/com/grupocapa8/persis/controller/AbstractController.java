@@ -31,8 +31,8 @@ public abstract class AbstractController<E> {
     @Path("crear")
     public Response crear(E entidad) {
         try {
-            servicio.crear(entidad);
-            return Response.ok().build();
+            E creada = servicio.crear(entidad);
+            return Response.ok(creada).build();
         } catch (NoSuchElementException e) {
             return Response.status(Response.Status.NOT_FOUND).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (IllegalArgumentException e) {

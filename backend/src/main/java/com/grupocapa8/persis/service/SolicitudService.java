@@ -53,7 +53,7 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
     }
 
     @Override
-    public void crear(SolicitudRequest req) {
+    public SolicitudRequest crear(SolicitudRequest req) {
         // 1. Buscar causa por numExpediente
         Causa causa = causaDAO.buscarPorNumExpediente(req.getCausa().getNumExpediente());
         // 2. Si no existe, crearla
@@ -68,7 +68,8 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
         req.getSolicitud().setEstado(EstadoSolicitud.PENDIENTE);
         req.getSolicitud().setFechaApertura(null);
         // 4. Insertar solicitud
-        solicitudDAO.insertar(req.getSolicitud(), req.getPeritosIds(), req.getTareasSolicitadas());
+        Solicitud s = solicitudDAO.insertar(req.getSolicitud(), req.getPeritosIds(), req.getTareasSolicitadas());
+        return armarResponse(s);
     }
 
     @Override

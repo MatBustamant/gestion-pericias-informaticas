@@ -8,7 +8,7 @@ window.setDT = function(t) {
 };
 
 window.init_detalle_causa = function() {
-  const o = S.solicitudes.find(x => x.id === S.detailId);
+  const o = S.solicitudes.find(x => x.id === S.detailId && x.tipo === S.detailTipo);
   const container = document.getElementById('detalle-container');
   if (!o) {
     container.innerHTML = '<div class="alert alert-warning">' + ic('alertC', 16) + ' Solicitud no encontrada.</div>';

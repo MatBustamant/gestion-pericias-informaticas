@@ -1,6 +1,6 @@
 function init_asignacion() {
   const pend = S.solicitudes.filter(o => o.estado !== 'resuelto');
-  const pendCount = S.solicitudes.filter(o => o.peritos.length === 0 && o.estado === 'pendiente').length;
+  const pendCount = S.solicitudes.filter(o => o.estado === 'pendiente').length;
 
   // Header
   document.getElementById('asig-subtitle').textContent = pendCount + ' solicitudes pendientes de asignación';

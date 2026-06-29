@@ -15,7 +15,7 @@ public interface ServiceGenerico<E> {
     
     public E buscar(int id) throws NoSuchElementException;
     public List<E> buscarTodos();
-    public void crear(E entidad);
+    public E crear(E entidad);
     public void modificar(E entidad, int id) throws NoSuchElementException;
     public void eliminar(int id) throws NoSuchElementException;
     

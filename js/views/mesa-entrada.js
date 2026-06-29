@@ -44,7 +44,7 @@ window.init_mesa_entrada = function() {
     list.forEach(o => {
       const el = tpl.content.cloneNode(true);
       const tr = el.querySelector('[data-mr-idx]');
-      tr.addEventListener('click', () => nav('detalle-causa', o.id));
+      tr.addEventListener('click', () => nav('detalle-causa', o.id+'@'+o.tipo));
       el.querySelector('[data-mr-id]').textContent = (o.tipo === 'narco' ? 'NAR-' : 'GEN-') + o.id;
       el.querySelector('[data-mr-exp]').textContent = o.exp;
       el.querySelector('[data-mr-imp]').textContent = o.imputado;
@@ -54,7 +54,7 @@ window.init_mesa_entrada = function() {
       el.querySelector('[data-mr-urg]').innerHTML = ubdg(o.urgencia);
       el.querySelector('[data-mr-est]').innerHTML = bdg(o.estado);
       el.querySelector('[data-mr-eye]').innerHTML = ic('eye', 15);
-      el.querySelector('[data-mr-eye]').addEventListener('click', e => { e.stopPropagation(); nav('detalle-causa', o.id); });
+      el.querySelector('[data-mr-eye]').addEventListener('click', e => { e.stopPropagation(); nav('detalle-causa', o.id+'@'+o.tipo); });
       tbody.appendChild(el);
     });
   }

@@ -44,11 +44,11 @@ public class UsuarioService implements ServiceGenerico<Usuario> {
 
     @Override
     public List<Usuario> buscarTodos() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return usuarioDAO.buscarTodos();
     }
 
     @Override
-    public void crear(Usuario entidad) {
+    public Usuario crear(Usuario entidad) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

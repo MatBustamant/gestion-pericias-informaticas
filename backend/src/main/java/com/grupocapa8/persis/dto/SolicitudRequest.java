@@ -6,6 +6,7 @@ package com.grupocapa8.persis.dto;
 
 import com.grupocapa8.persis.model.Causa;
 import com.grupocapa8.persis.model.Solicitud;
+import java.util.List;
 
 /**
  *
@@ -14,6 +15,8 @@ import com.grupocapa8.persis.model.Solicitud;
 public class SolicitudRequest {
     private Causa causa;
     private Solicitud solicitud;
+    private List<Integer> peritosIds;
+    private String tareasSolicitadas;
 
     public Causa getCausa() {
         return causa;
@@ -29,5 +32,21 @@ public class SolicitudRequest {
 
     public void setSolicitud(Solicitud solicitud) {
         this.solicitud = solicitud;
+    }
+
+    public List<Integer> getPeritosIds() {
+        return peritosIds;
+    }
+
+    public void setPeritosIds(List<Integer> peritosIds) {
+        this.peritosIds = peritosIds;
+    }
+
+    public String getTareasSolicitadas() {
+        return tareasSolicitadas;
+    }
+
+    public void setTareasSolicitadas(String tareasSolicitadas) {
+        this.tareasSolicitadas = tareasSolicitadas;
     }
 }

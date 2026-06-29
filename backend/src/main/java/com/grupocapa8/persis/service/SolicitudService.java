@@ -47,11 +47,13 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
         SolicitudRequest req = new SolicitudRequest();
         req.setSolicitud(s);
         req.setCausa(causa);
+        req.setPeritosIds(solicitudDAO.buscarPeritosIds(s.getId()));
+        req.setTareasSolicitadas(solicitudDAO.buscarTareas(s.getId()));
         return req;
     }
 
     @Override
-    public void crear(SolicitudRequest req) {
+    public SolicitudRequest crear(SolicitudRequest req) {
         // 1. Buscar causa por numExpediente
         Causa causa = causaDAO.buscarPorNumExpediente(req.getCausa().getNumExpediente());
         // 2. Si no existe, crearla
@@ -66,15 +68,16 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
         req.getSolicitud().setEstado(EstadoSolicitud.PENDIENTE);
         req.getSolicitud().setFechaApertura(null);
         // 4. Insertar solicitud
-        solicitudDAO.insertar(req.getSolicitud());
+        Solicitud s = solicitudDAO.insertar(req.getSolicitud(), req.getPeritosIds(), req.getTareasSolicitadas());
+        return armarResponse(s);
     }
 
     @Override
-    public void modificar(SolicitudRequest req, int id) {
+    public void modificar(SolicitudRequest req, int id) throws NoSuchElementException {
         // 1. Obtener solicitud actual
-        Solicitud actual = solicitudDAO.buscarPorId(id);
+        SolicitudRequest reqActual = this.buscar(id);
         // 2. Si cambió el numExpediente → buscar o crear nueva causa
-        Causa causaActual = causaDAO.buscarPorId(actual.getCausa().getId());
+        Causa causaActual = reqActual.getCausa();
         String nuevoExp = req.getCausa().getNumExpediente();
         if (!nuevoExp.equals(causaActual.getNumExpediente())) {
             Causa causa = causaDAO.buscarPorNumExpediente(nuevoExp);
@@ -90,12 +93,13 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
             req.getSolicitud().setCausa(req.getCausa());
         }
         req.getSolicitud().setId(id);
-        solicitudDAO.actualizar(req.getSolicitud());
+        solicitudDAO.actualizar(req.getSolicitud(), req.getPeritosIds(), req.getTareasSolicitadas());
     }
 
     @Override
-    public void eliminar(int id) {
-        Solicitud s = solicitudDAO.buscarPorId(id);
+    public void eliminar(int id) throws NoSuchElementException {
+        SolicitudRequest req = this.buscar(id);
+        Solicitud s = req.getSolicitud();
         int idCausa = s.getCausa().getId();
         solicitudDAO.eliminar(id);
         if (solicitudDAO.contarPorCausa(idCausa) == 0) {

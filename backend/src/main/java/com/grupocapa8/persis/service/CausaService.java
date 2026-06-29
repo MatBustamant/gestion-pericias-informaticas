@@ -40,7 +40,7 @@ public class CausaService implements ServiceGenerico<Causa> {
     }
 
     @Override
-    public void crear(Causa entidad) {
+    public Causa crear(Causa entidad) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

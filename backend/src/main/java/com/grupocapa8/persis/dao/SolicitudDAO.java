@@ -72,7 +72,7 @@ public class SolicitudDAO {
         return lista;
     }
 
-    public int insertar(Solicitud s) {
+    public Solicitud insertar(Solicitud s, List<Integer> peritosIds, String tareasSolicitadas) {
         Connection con = null;
         try {
             con = BaseDeDatos.getConnection();
@@ -116,50 +116,122 @@ public class SolicitudDAO {
                 }
             }
 
+            // 3. Insertar tarea
+            if (tareasSolicitadas != null && !tareasSolicitadas.isBlank()) {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO Tarea (id_solicitud, descripcion) VALUES (?, ?)")) {
+                    ps.setInt(1, s.getId());
+                    ps.setString(2, tareasSolicitadas);
+                    ps.executeUpdate();
+                }
+            }
+
+            // 4. Insertar peritos
+            if (peritosIds != null) {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO Usuario_Solicitud (id_solicitud, id_usuario) VALUES (?, ?)")) {
+                    for (Integer pid : peritosIds) {
+                        ps.setInt(1, s.getId());
+                        ps.setInt(2, pid);
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
             con.commit();
-            return s.getId();
+            return s;
         } catch (SQLException ex) {
             try { if (con != null) con.rollback(); } catch (SQLException e) { /* ignore */ }
             System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-            return -1;
+            return null;
         } finally {
             try { if (con != null) { con.setAutoCommit(true); con.close(); } } catch (SQLException e) { /* ignore */ }
         }
     }
 
-    public void actualizar(Solicitud s) {
-        String sql = "UPDATE Solicitud SET id_causa = ?, circunscripcion = ?, descripcion_secuestros = ?, "
-                + "urgencia = ?, estado = ?, fecha_hora_agendada = ?, fiscal_solicitante = ? "
-                + "WHERE id_solicitud = ?";
-        try (Connection con = BaseDeDatos.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, s.getCausa().getId());
-            ps.setString(2, s.getCircunscripcion());
-            ps.setString(3, s.getDescripcionSecuestros());
-            ps.setString(4, s.getUrgencia().toString().toLowerCase());
-            String estadoDb = s.getEstado().toString().toLowerCase().replace('_', '-');
-            ps.setString(5, estadoDb);
+    public void actualizar(Solicitud s, List<Integer> peritosIds, String tareasSolicitadas) {
+        Connection con = null;
+        try {
+            con = BaseDeDatos.getConnection();
+            con.setAutoCommit(false);
+
+            // 1. Actualizar solicitud
+            String sql = "UPDATE Solicitud SET id_causa = ?, circunscripcion = ?, descripcion_secuestros = ?, "
+                    + "urgencia = ?, estado = ?, fecha_hora_agendada = ?, fiscal_solicitante = ? "
+                    + "WHERE id_solicitud = ?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setInt(1, s.getCausa().getId());
+                ps.setString(2, s.getCircunscripcion());
+                ps.setString(3, s.getDescripcionSecuestros());
+                ps.setString(4, s.getUrgencia().toString().toLowerCase());
+                String estadoDb = s.getEstado().toString().toLowerCase().replace('_', '-');
+                ps.setString(5, estadoDb);
                 if (s.getFechaApertura() != null) {
                     ps.setString(6, DTF.format(LocalDateTime.ofInstant(s.getFechaApertura(), ZoneOffset.UTC)));
                 } else {
                     ps.setString(6, null);
                 }
-            ps.setString(7, s.getFiscalSolicitante());
-            ps.setInt(8, s.getId());
-            ps.executeUpdate();
+                ps.setString(7, s.getFiscalSolicitante());
+                ps.setInt(8, s.getId());
+                ps.executeUpdate();
+            }
+
+            // 2. Reemplazar tareas (delete + insert)
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM Tarea WHERE id_solicitud = ?")) {
+                ps.setInt(1, s.getId());
+                ps.executeUpdate();
+            }
+            if (tareasSolicitadas != null && !tareasSolicitadas.isBlank()) {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO Tarea (id_solicitud, descripcion) VALUES (?, ?)")) {
+                    ps.setInt(1, s.getId());
+                    ps.setString(2, tareasSolicitadas);
+                    ps.executeUpdate();
+                }
+            }
+
+            // 3. Reemplazar peritos (delete + insert)
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM Usuario_Solicitud WHERE id_solicitud = ?")) {
+                ps.setInt(1, s.getId());
+                ps.executeUpdate();
+            }
+            if (peritosIds != null) {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO Usuario_Solicitud (id_solicitud, id_usuario) VALUES (?, ?)")) {
+                    for (Integer pid : peritosIds) {
+                        ps.setInt(1, s.getId());
+                        ps.setInt(2, pid);
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
+            con.commit();
         } catch (SQLException ex) {
+            try { if (con != null) con.rollback(); } catch (SQLException e) { /* ignore */ }
             System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        } finally {
+            try { if (con != null) { con.setAutoCommit(true); con.close(); } } catch (SQLException e) { /* ignore */ }
         }
     }
 
     public void eliminar(int id) {
-        String sql = "DELETE FROM Solicitud WHERE id_solicitud = ?";
-        try (Connection con = BaseDeDatos.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+        Connection con = null;
+        try {
+            con = BaseDeDatos.getConnection();
+            con.setAutoCommit(false);
+            try (Statement st = con.createStatement()) {
+                st.execute("DELETE FROM Usuario_Solicitud WHERE id_solicitud = " + id);
+                st.execute("DELETE FROM Tarea WHERE id_solicitud = " + id);
+                st.execute("DELETE FROM Solicitud WHERE id_solicitud = " + id);
+            }
+            con.commit();
         } catch (SQLException ex) {
+            try { if (con != null) con.rollback(); } catch (SQLException e) { /* ignore */ }
             System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        } finally {
+            try { if (con != null) { con.setAutoCommit(true); con.close(); } } catch (SQLException e) { /* ignore */ }
         }
     }
 
@@ -177,6 +249,36 @@ public class SolicitudDAO {
         return 0;
     }
 
+    public List<Integer> buscarPeritosIds(int idSolicitud) {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT id_usuario FROM Usuario_Solicitud WHERE id_solicitud = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) ids.add(rs.getInt("id_usuario"));
+            }
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return ids;
+    }
+    
+    public String buscarTareas(int idSolicitud) {
+        List<String> descs = new ArrayList<>();
+        String sql = "SELECT descripcion FROM Tarea WHERE id_solicitud = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) descs.add(rs.getString("descripcion"));
+            }
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return descs.isEmpty() ? "" : String.join("; ", descs);
+    }
+    
     private Solicitud mapear(ResultSet rs) throws SQLException {
         Causa causa = new Causa();
         causa.setId(rs.getInt("id_causa"));

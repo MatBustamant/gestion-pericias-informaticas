@@ -4,12 +4,17 @@
 
 package com.grupocapa8.persis;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.grupocapa8.persis.config.BaseDeDatos;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.SQLException;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 
 /**
@@ -24,9 +29,16 @@ public class App {
         try {
             System.out.println("Iniciando servidor PERSIS...");
 
-            // Se configura con la clase o el paquete donde están los recursos.
+            // Se configura Jackson para serializar a JSON correctamente incluso las fechas y solo campos no nulos
+            final ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            
+            // Se configura con la clase o el paquete donde están los recursos y con el objectMapper de arriba.
             final ResourceConfig resourceConfig = new ResourceConfig()
-                    .packages("com.grupocapa8.persis.controller", "com.grupocapa8.persis.config");
+                    .packages("com.grupocapa8.persis.controller", "com.grupocapa8.persis.config")
+                    .register(new JacksonJaxbJsonProvider(objectMapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
 
             // Con esto se configura el arranque del servidor Grizzly
             final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);

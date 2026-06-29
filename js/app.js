@@ -3,7 +3,7 @@ const COMPS = { sidebar: '', topbar: '' };
 
 /* ===== ROUTER Y COMPONENTES ===== */
 async function nav(screen, id = '') {
-    if (screen === 'detalle-causa' && id) { S.detailId = id; S.detalleTab = 'info'; }
+    if (screen === 'detalle-causa' && id) { const p=id.split('@'); S.detailId=p[0]; S.detailTipo=p[1]; S.detalleTab='info'; }
     S.screen = screen;
     const app = document.getElementById('app');
 
@@ -128,7 +128,7 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id};if (o?.fhi) {const d = new Date(o.fhi);if (!isNaN(d)) { S.cal.year = d.getFullYear(); S.cal.month = d.getMonth(); }} rmModal(); }
+function openAM(id,tipo){const o=S.solicitudes.find(x=>x.id===id && x.tipo===tipo);S.modal='asignar-perito';S.aForm={solicitudId:id,solicitudTipo:tipo,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id};if (o?.fhi) {const d = new Date(o.fhi);if (!isNaN(d)) { S.cal.year = d.getFullYear(); S.cal.month = d.getMonth(); }} rmModal(); }
 
 window.abrirModalBuscar = function(accion) {
     S.searchAction = accion;
@@ -376,7 +376,7 @@ function updateModalData() {
     
     else if (S.modal === 'asignar-perito') {
         const f = S.aForm;
-        const o = S.solicitudes.find(x => x.id === f.solicitudId);
+        const o = S.solicitudes.find(x => x.id === f.solicitudId && x.tipo === f.solicitudTipo);
         const p = S.peritos;
 
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
@@ -482,49 +482,54 @@ async function saveOficio(){
   }
   
   if (S.editMode) {
-      // Flujo de Modificación
       const req = S.solicitudes.find(s => s.id === S.editId && s.tipo === S.editTipo);
       if (req) {
-          req.exp = f.expediente;
-          req.imputado = f.imputado;
-          req.victima = f.victima;
-          req.delito = f.delito;
-          req.fiscal = f.fiscal;
-          req.jur = f.jurisdiccion;
-          req.secuestros = f.descripcionSecuestros;
-          req.tareas = f.tareassolicitadas;
-          req.urgencia = f.urgencia;
-          // Nota: id, tipo, estado, peritos, y fhi quedan INTACTOS.
+          const flatData = {
+              tipo: req.tipo,
+              exp: f.expediente,
+              imputado: f.imputado,
+              victima: f.victima,
+              delito: f.delito,
+              fiscal: f.fiscal,
+              jur: f.jurisdiccion,
+              secuestros: f.descripcionSecuestros,
+              tareas: f.tareassolicitadas,
+              urgencia: f.urgencia,
+              peritos: req.peritos,
+              fhi: req.fhi,
+              estado: req.estado
+          };
+          await DB.modificarSolicitud(req.dbId, flatData);
       }
       closeM();
       showToast(`Solicitud ${(req.tipo==='narco'?'NAR-':'GEN-')}${req.id} modificada exitosamente.`);
   } else {
-      // Flujo de Nuevo Registro (Original)
-      const id=genId(f.tipo);
-      S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
+      const flatData = {
+          tipo: f.tipo,
+          exp: f.expediente,
+          imputado: f.imputado,
+          victima: f.victima,
+          delito: f.delito,
+          fiscal: f.fiscal,
+          jur: f.jurisdiccion,
+          secuestros: f.descripcionSecuestros,
+          tareas: f.tareassolicitadas,
+          urgencia: f.urgencia
+      };
+      const creada = await DB.crearSolicitud(flatData);
       closeM();
-      showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
+      showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${creada.id}`);
   }
-  
-  await DB.saveSolicitudes();
-  if(!S.editMode) await DB.saveIdCounters(); // Solo incrementar counter si es registro nuevo
   
   nav(S.screen);
 }
 
 window.confirmarEliminacion = async function() {
     if (!S.deleteMode || !S.deleteId) return;
-    
-    const index = S.solicitudes.findIndex(s => s.id === S.deleteId && s.tipo === S.deleteTipo);
-    if (index === -1) return;
-    
-    const req = S.solicitudes[index];
+    const req = S.solicitudes.find(s => s.id === S.deleteId && s.tipo === S.deleteTipo);
+    if (!req) return;
     const prefijo = req.tipo === 'narco' ? 'NAR-' : 'GEN-';
-    
-    // Eliminación física
-    S.solicitudes.splice(index, 1);
-    await DB.saveSolicitudes();
-    
+    await DB.eliminarSolicitud(req.dbId);
     closeM();
     showToast(`Solicitud ${prefijo}${req.id} desestimada correctamente.`);
     nav(S.screen);
@@ -534,29 +539,28 @@ async function saveAsig(){
   const f=S.aForm;
   if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
   if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
-  const o=S.solicitudes.find(x=>x.id===f.solicitudId);
+  const o=S.solicitudes.find(x=>x.id===f.solicitudId && x.tipo===f.solicitudTipo);
   const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
   if(o){
     o.peritos=[...f.peritosSeleccionados];
     o.fhi=f.fechaHoraInforme;
+    await DB.modificarSolicitud(o.dbId, o);
   }
   closeM();
   showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
-  await DB.saveSolicitudes();
-  nav(S.screen);
+  init_asignacion();
 }
 
-async function confirmAsig(id) { 
-    const o = S.solicitudes.find(x => x.id === id);
-    
+async function confirmAsig(id, tipo) {
+    const o = S.solicitudes.find(x => x.id === id && x.tipo === tipo);
     if (o && o.estado === 'pendiente') {
         o.estado = 'en-proceso';
+        await DB.modificarSolicitud(o.dbId, o);
     }
-
-    await DB.saveSolicitudes();
-    showToast('Asignación confirmada para ' + `${(o.tipo==='narco'?'NAR-':'GEN-')}${id}`, 'success');
-    
-    init_asignacion(); 
+    if (!o) return;
+    const prefijo = tipo === 'narco' ? 'NAR-' : 'GEN-';
+    showToast('Asignación confirmada para ' + prefijo + id, 'success');
+    init_asignacion();
 };
 
 function renderNotifBadge() {
@@ -592,7 +596,7 @@ function renderNotifDropdown() {
         return;
     }
     dd.innerHTML = pendientes.map(s => `
-        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id}'); document.getElementById('notif-dropdown').style.display='none';">
+        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id+'@'+s.tipo}'); document.getElementById('notif-dropdown').style.display='none';">
             <div style="font-size:13px;font-weight:500;">Se le ha asignado una nueva solicitud</div>
             <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">N.º de Legajo de Causa ${esc(s.exp)}</div>
         </div>

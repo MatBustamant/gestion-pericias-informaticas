@@ -596,7 +596,7 @@ function renderNotifDropdown() {
         return;
     }
     dd.innerHTML = pendientes.map(s => `
-        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id}'); document.getElementById('notif-dropdown').style.display='none';">
+        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id+'@'+s.tipo}'); document.getElementById('notif-dropdown').style.display='none';">
             <div style="font-size:13px;font-weight:500;">Se le ha asignado una nueva solicitud</div>
             <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">N.º de Legajo de Causa ${esc(s.exp)}</div>
         </div>

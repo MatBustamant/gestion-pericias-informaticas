@@ -153,11 +153,11 @@ public class SolicitudDAO {
     }
 
     public void eliminar(int id) {
-        String sql = "DELETE FROM Solicitud WHERE id_solicitud = ?";
         try (Connection con = BaseDeDatos.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+             Statement st = con.createStatement()) {
+            st.execute("DELETE FROM Usuario_Solicitud WHERE id_solicitud = " + id);
+            st.execute("DELETE FROM Tarea WHERE id_solicitud = " + id);
+            st.execute("DELETE FROM Solicitud WHERE id_solicitud = " + id);
         } catch (SQLException ex) {
             System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
@@ -177,6 +177,82 @@ public class SolicitudDAO {
         return 0;
     }
 
+    public List<Integer> buscarPeritosIds(int idSolicitud) {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT id_usuario FROM Usuario_Solicitud WHERE id_solicitud = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) ids.add(rs.getInt("id_usuario"));
+            }
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return ids;
+    }
+    
+    public void insertarPerito(int idSolicitud, int idUsuario) {
+        String sql = "INSERT INTO Usuario_Solicitud (id_solicitud, id_usuario) VALUES (?, ?)";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            ps.setInt(2, idUsuario);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
+    public void eliminarPeritos(int idSolicitud) {
+        String sql = "DELETE FROM Usuario_Solicitud WHERE id_solicitud = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
+    public String buscarTareas(int idSolicitud) {
+        List<String> descs = new ArrayList<>();
+        String sql = "SELECT descripcion FROM Tarea WHERE id_solicitud = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) descs.add(rs.getString("descripcion"));
+            }
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return descs.isEmpty() ? "" : String.join("; ", descs);
+    }
+    
+    public void insertarTarea(int idSolicitud, String descripcion) {
+        String sql = "INSERT INTO Tarea (id_solicitud, descripcion) VALUES (?, ?)";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            ps.setString(2, descripcion);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
+    public void eliminarTareas(int idSolicitud) {
+        String sql = "DELETE FROM Tarea WHERE id_solicitud = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idSolicitud);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            System.getLogger(SolicitudDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
     private Solicitud mapear(ResultSet rs) throws SQLException {
         Causa causa = new Causa();
         causa.setId(rs.getInt("id_causa"));

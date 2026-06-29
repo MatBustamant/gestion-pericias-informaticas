@@ -8,11 +8,10 @@ package com.grupocapa8.persis.enums;
  *
  * @author Matias
  */
-public enum RolUsuario {
-    MESA_ENTRADA,
-    PERITO,
-    COORDINADOR,
-    ADMIN;
+public enum EstadoSolicitud {
+    PENDIENTE,
+    EN_PROCESO,
+    RESUELTO;
     
     @Override
     public String toString() {

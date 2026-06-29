@@ -37,6 +37,8 @@ public abstract class AbstractController<E> {
             return Response.status(Response.Status.NOT_FOUND).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (IllegalArgumentException e) {
             return Response.status(422, "Unprocessable Entity").entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        } catch (UnsupportedOperationException e) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
@@ -51,6 +53,8 @@ public abstract class AbstractController<E> {
             return Response.ok(entidad).build();
         } catch (NoSuchElementException e) {
             return Response.status(Response.Status.NOT_FOUND).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        } catch (UnsupportedOperationException e) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
@@ -63,6 +67,8 @@ public abstract class AbstractController<E> {
         try {
             List<E> entidades = servicio.buscarTodos();
             return Response.ok(entidades).build();
+        } catch (UnsupportedOperationException e) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
@@ -79,6 +85,8 @@ public abstract class AbstractController<E> {
             return Response.status(Response.Status.NOT_FOUND).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (IllegalArgumentException e) {
             return Response.status(422, "Unprocessable Entity").entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        } catch (UnsupportedOperationException e) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
@@ -94,6 +102,8 @@ public abstract class AbstractController<E> {
             return Response.status(Response.Status.NOT_FOUND).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (IllegalArgumentException e) {
             return Response.status(422, "Unprocessable Entity").entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        } catch (UnsupportedOperationException e) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }

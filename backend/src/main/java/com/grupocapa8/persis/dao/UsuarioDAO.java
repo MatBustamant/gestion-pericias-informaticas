@@ -4,10 +4,15 @@
  */
 package com.grupocapa8.persis.dao;
 
+import com.grupocapa8.persis.config.BaseDeDatos;
 import com.grupocapa8.persis.enums.RolUsuario;
 import com.grupocapa8.persis.model.Usuario;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -15,26 +20,56 @@ import java.util.Map;
  */
 public class UsuarioDAO {
 
-    private static final Map<String, Usuario> USUARIOS = new LinkedHashMap<>();
-
-    static {
-        // Mismos usuarios que en state.js, con jBCrypt de "1234"
-        agregar(1, "Laura Suárez",  "laura",   "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.PERITO);
-        agregar(2, "Matías Herrera","matias",  "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.PERITO);
-        agregar(3, "Verónica Castro", "veronica", "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.PERITO);
-        agregar(4, "Diego Romero", "diego", "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.PERITO);
-        agregar(5, "Claudia Ríos", "claudia", "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.PERITO);
-        agregar(6, "Ignacio Palma", "ignacio", "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.PERITO);
-        agregar(7, "Ana González",  "ana",     "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.MESA_ENTRADA);
-        agregar(8, "Carlos Méndez", "carlos",  "$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy", RolUsuario.COORDINADOR);
+    public Usuario buscarPorId(int id) {
+        String sql = "SELECT * FROM Usuario WHERE id_usuario = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        } catch (SQLException ex) {
+            System.getLogger(CausaDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return null;
     }
-
-    private static void agregar(int id, String nombre, String username, String hash, RolUsuario rol) {
-        USUARIOS.put(username, new Usuario(id, nombre, username, hash, rol, false));
+    
+    public Usuario buscar(String nombreUsuario) {
+        String sql = "SELECT * FROM Usuario WHERE nombre_usuario = ?";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nombreUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        } catch (SQLException ex) {
+            System.getLogger(CausaDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return null;
     }
-
-    public Usuario buscar(String username) {
-        return USUARIOS.get(username);
+    
+    public List<Usuario> buscarTodos() {
+        List<Usuario> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Usuario";
+        try (Connection con = BaseDeDatos.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) lista.add(mapear(rs));
+        } catch (SQLException ex) {
+            System.getLogger(CausaDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return lista;
+    }
+    
+    private Usuario mapear(ResultSet rs) throws SQLException {
+        return new Usuario(
+            rs.getInt("id_usuario"),
+            rs.getString("nombre_completo"),
+            rs.getString("nombre_usuario"),
+            rs.getString("contrasena"),
+            RolUsuario.valueOf(rs.getString("rol").toUpperCase()),
+            false
+        );
     }
     
 }

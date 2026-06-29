@@ -99,15 +99,19 @@ CREATE TABLE IF NOT EXISTS "Procedimiento" (
 );
 
 INSERT INTO "Causa" ("num_Expediente", "delito", "tipo", "imputados", "victimas") VALUES 
-('EXP-2026-001', 'Robo a mano armada', 'general', 'Juan Perez', 'Maria Gomez'),
-('EXP-2026-002', 'Comercialización de estupefacientes', 'narco', 'Carlos Ruiz, Ana Blanco', 'La Sociedad');
+('2026-001', 'Robo a mano armada', 'general', 'Juan Perez', 'Maria Gomez'),
+('2026-002', 'Comercialización de estupefacientes', 'narco', 'Carlos Ruiz, Ana Blanco', 'La Sociedad');
 
 -- Insertamos usuarios con los distintos roles
 INSERT INTO "Usuario" ("nombre_usuario", "contrasena", "nombre_completo", "rol", "estado") VALUES 
-('admin_sist', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Sistema Administrador', 'Admin', 'activo'),
-('lmartinez', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Laura Martinez', 'Mesa_entrada', 'activo'),
-('jsilva', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Javier Silva', 'Perito', 'activo'),
-('gromero', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Gabriela Romero', 'Perito', 'activo');
+('laura', '$2a$10$XRkZxJzTbBz64LYAbnHyZ.VQ9duagGeqXh1wVtt7AxMdnYpHjhWBq', 'Laura Suárez', 'Perito', 'activo'),
+('matias', '$2a$10$XRkZxJzTbBz64LYAbnHyZ.VQ9duagGeqXh1wVtt7AxMdnYpHjhWBq', 'Matías Herrera', 'Perito', 'activo'),
+('veronica', '$2a$10$XRkZxJzTbBz64LYAbnHyZ.VQ9duagGeqXh1wVtt7AxMdnYpHjhWBq', 'Verónica Castro', 'Perito', 'activo'),
+('diego', '$2a$10$XRkZxJzTbBz64LYAbnHyZ.VQ9duagGeqXh1wVtt7AxMdnYpHjhWBq', 'Diego Romero', 'Perito', 'activo'),
+('claudia', '$2a$10$XRkZxJzTbBz64LYAbnHyZ.VQ9duagGeqXh1wVtt7AxMdnYpHjhWBq', 'Claudia Ríos', 'Perito', 'activo'),
+('ignacio', '$2a$10$XRkZxJzTbBz64LYAbnHyZ.VQ9duagGeqXh1wVtt7AxMdnYpHjhWBq', 'Ignacio Palma', 'Perito', 'activo'),
+('ana', '$2a$10$bcBBgPbkT1oV4yESyoEF1.e1AKKmSFt7j9vDBsQCiI8PE.hZ2xR5a', 'Ana González', 'Mesa_entrada', 'activo'),
+('carlos', '$2a$10$cBgsTa7NrWHSEljQ0B.0pu/C/rqO.Yjv.neeeQBgeGCgWSvhQMfBu', 'Carlos Méndez', 'Coordinador', 'activo');
 
 -- Inicializamos los contadores para el año actual (simulando que ya se crearon algunas)
 INSERT INTO "Contador_Solicitud" ("tipo", "anio", "ultimo") VALUES 
@@ -132,10 +136,10 @@ INSERT INTO "Solicitud" ("id_causa", "num_interno", "tipo", "anio", "circunscrip
 
 -- Asignamos peritos a las solicitudes
 INSERT INTO "Usuario_Solicitud" ("id_solicitud", "id_usuario") VALUES 
-(1, 3), -- Solicitud 1 asignada a Javier
-(2, 4), -- Solicitud 2 asignada a Gabriela
-(3, 3), -- Solicitud 3 asignada a Javier
-(3, 4); -- Solicitud 3 asignada a Gabriela (trabajo en conjunto)
+(1, 3), -- Solicitud 1 asignada a Verónica
+(2, 4), -- Solicitud 2 asignada a Diego
+(3, 3), -- Solicitud 3 asignada a Verónica
+(3, 4); -- Solicitud 3 asignada a Diego (trabajo en conjunto)
 
 -- Tareas requeridas para cada solicitud
 INSERT INTO "Tarea" ("id_solicitud", "descripcion") VALUES 
@@ -179,9 +183,9 @@ UPDATE "Contador_Solicitud" SET "ultimo" = 3 WHERE "tipo" = 'narco' AND "anio" =
 
 -- Insertamos nuevas causas (IDs 3, 4 y 5)
 INSERT INTO "Causa" ("num_Expediente", "delito", "tipo", "imputados", "victimas") VALUES 
-('EXP-2026-112', 'Estafas reiteradas (Cuento del Tio)', 'general', 'Autores a establecer', 'Rosa Gonzalez'),
-('EXP-2026-204', 'Homicidio Simple', 'general', 'Miguel Herrera', 'Carlos Diaz'),
-('EXP-2026-301', 'Infraccion Ley 23.737', 'narco', 'Familia Juarez', 'Salud Publica');
+('2026-112', 'Estafas reiteradas (Cuento del Tio)', 'general', 'Autores a establecer', 'Rosa Gonzalez'),
+('2026-204', 'Homicidio Simple', 'general', 'Miguel Herrera', 'Carlos Diaz'),
+('2026-301', 'Infraccion Ley 23.737', 'narco', 'Familia Juarez', 'Salud Publica');
 
 
 -- ==========================================
@@ -201,10 +205,10 @@ INSERT INTO "Solicitud" ("id_causa", "num_interno", "tipo", "anio", "circunscrip
 
 -- Asignamos las nuevas solicitudes a los peritos (IDs de usuario 3 y 4)
 INSERT INTO "Usuario_Solicitud" ("id_solicitud", "id_usuario") VALUES 
-(4, 4), -- Solicitud de Estafas asignada a Gabriela
-(5, 3), -- Solicitud de Homicidio en La Banda asignada a Javier
-(6, 3), -- Narcomenudeo Termas a Javier
-(7, 4); -- Narcomenudeo Frías a Gabriela
+(4, 4), -- Solicitud de Estafas asignada a Diego
+(5, 3), -- Solicitud de Homicidio en La Banda asignada a Verónica
+(6, 3), -- Narcomenudeo Termas a Verónica
+(7, 4); -- Narcomenudeo Frías a Diego
 
 -- Detallamos el trabajo pedido por los fiscales
 INSERT INTO "Tarea" ("id_solicitud", "descripcion") VALUES 

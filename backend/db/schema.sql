@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS "Usuario" (
     "nombre_usuario" TEXT NOT NULL,
     "contrasena" TEXT NOT NULL,
     "nombre_completo" TEXT NOT NULL,
-    "rol" TEXT NOT NULL CHECK(rol IN ('Perito', 'Mesa de entrada', 'Administrador')), 
+    "rol" TEXT NOT NULL CHECK(rol IN ('Perito', 'Mesa_entrada', 'Coordinador', 'Admin')), 
     "estado" TEXT NOT NULL CHECK(estado IN ('activo','inactivo'))
 );
 
@@ -104,10 +104,10 @@ INSERT INTO "Causa" ("num_Expediente", "delito", "tipo", "imputados", "victimas"
 
 -- Insertamos usuarios con los distintos roles
 INSERT INTO "Usuario" ("nombre_usuario", "contrasena", "nombre_completo", "rol", "estado") VALUES 
-('admin_sist', 'hash_123', 'Sistema Administrador', 'Administrador', 'activo'),
-('lmartinez', 'pass_123', 'Laura Martinez', 'Mesa de entrada', 'activo'),
-('jsilva', 'perito_123', 'Javier Silva', 'Perito', 'activo'),
-('gromero', 'perito_123', 'Gabriela Romero', 'Perito', 'activo');
+('admin_sist', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Sistema Administrador', 'Admin', 'activo'),
+('lmartinez', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Laura Martinez', 'Mesa_entrada', 'activo'),
+('jsilva', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Javier Silva', 'Perito', 'activo'),
+('gromero', '$2a$10$Zo0iwbXCuD3/AbUHsDQz5e5nVkaEFDf.2365hlTHqHnW79cVUhTyy', 'Gabriela Romero', 'Perito', 'activo');
 
 -- Inicializamos los contadores para el año actual (simulando que ya se crearon algunas)
 INSERT INTO "Contador_Solicitud" ("tipo", "anio", "ultimo") VALUES 

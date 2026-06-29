@@ -31,8 +31,8 @@ async function crearSolicitud(req) {
     return fetch(`${API_BASE}/solicitud/crear`, POST(req));
 }
 
-async function modificarSolicitud(req) {
-    return fetch(`${API_BASE}/solicitud/modificar`, PUT(req));
+async function modificarSolicitud(id, req) {
+    return fetch(`${API_BASE}/solicitud/modificar/${id}`, PUT(req));
 }
 
 async function eliminarSolicitud(id) {

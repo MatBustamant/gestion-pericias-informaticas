@@ -31,7 +31,7 @@ public class BaseDeDatos {
     
     private static void inicializarSiNoExiste(Connection con) throws SQLException {
         if (schemaInicializado) return;
-        String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='usuario'";
+        String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='Usuario'";
         
         try(Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(sql)) {

@@ -48,7 +48,7 @@ public class UsuarioService implements ServiceGenerico<Usuario> {
     }
 
     @Override
-    public void crear(Usuario entidad) {
+    public Usuario crear(Usuario entidad) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

@@ -361,3 +361,11 @@ tbody tr:hover { background: #F0F6FF; }
 .notif-item:hover { background: #F9FAFB; }
 .notif-item.unread { background: #EFF6FF; }
 .notif-item.unread:hover { background: #DBEAFE; }
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+    background: #f0f0f0 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}

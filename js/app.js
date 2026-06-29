@@ -186,7 +186,7 @@ window.ejecutarBusquedaModal = function() {
     };
     
     if (S.searchAction === 'edit') {
-        S.editMode = true; S.editId = cleanId; S.editTipo = req.tipo;
+        S.editMode = true; S.editId = cleanId; S.editTipo = req.tipo; S.editExpOriginal = req.exp;
         S.deleteMode = false; S.deleteId = null; S.deleteTipo = null;
         S.modalStep = 1;
     } else if (S.searchAction === 'delete') {
@@ -202,7 +202,7 @@ function openModal(t){
     S.modal=t; 
     S.modalStep=1; 
     if(t==='nueva-solicitud'){
-        S.editMode=false; S.editId=null; S.editTipo=null; S.deleteMode=false; S.deleteId=null; S.deleteTipo=null; 
+        S.editMode=false; S.editId=null; S.editTipo=null; S.deleteMode=false; S.deleteId=null; S.deleteTipo=null; S.editExpOriginal = '';
         S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};
     } 
     rmModal(); 
@@ -236,7 +236,6 @@ function rmModal() {
     }
 }
 
-// Esta es la estrella del show: actualiza los valores del DOM sin recargar el HTML
 function updateModalData() {
     if (S.modal === 'nueva-solicitud') {
         const f = S.form;
@@ -253,8 +252,19 @@ function updateModalData() {
         document.getElementById('nom-secuestros').value = f.descripcionSecuestros || '';
         document.getElementById('nom-tareas').value = f.tareassolicitadas || '';
 
-        document.getElementById('nom-tipo').disabled = (S.editMode || S.deleteMode);
-        
+        const tipoEl = document.getElementById('nom-tipo');
+        tipoEl.disabled = (S.editMode || S.deleteMode);
+        const expInput = document.getElementById('nom-expediente');
+        if (expInput && !expInput.dataset.lookup) {
+            expInput.dataset.lookup = '1';
+            expInput.addEventListener('input', function() {
+                clearTimeout(_lookupTimer);
+                _lookupTimer = setTimeout(() => {
+                    const disableIfFound = !S.editMode || this.value !== S.editExpOriginal;
+                    lookupExpediente(this.value, disableIfFound);
+                }, 400);
+            });
+        }
         // 2. Controlar textos dinámicos
         const titleEl = document.querySelector('.modal-title');
         const subEl = document.getElementById('nom-modal-sub');
@@ -614,4 +624,58 @@ async function markNotifAsRead() {
     S.notifLeidas[username] = [...readIds, ...unread.map(s => s.id)];
     await DB.saveNotifLeidas();
     renderNotifBadge();
+}
+
+let _lookupTimer = null;
+
+async function lookupExpediente(exp, disableIfFound = true) {
+    if (!exp || exp.trim() === '') {
+        disableCausaFields(false);
+        return;
+    }
+    try {
+        const res = await buscarCausaPorExpediente(exp.trim());
+        if (res.ok) {
+            const c = await res.json();
+            S.form.imputado = c.imputados || '';
+            S.form.victima = c.victimas || '';
+            S.form.delito = c.delito || '';
+            if (!S.editMode) S.form.tipo = (c.tipo || '').toLowerCase();
+            disableCausaFields(disableIfFound);
+            const tipoEl = document.getElementById('nom-tipo');
+            tipoEl.disabled = true;
+        } else if (res.status === 404) {
+            if (!S.editMode || exp !== S.editExpOriginal) {
+                S.form.imputado = '';
+                S.form.victima = '';
+                S.form.delito = '';
+            }
+            disableCausaFields(false);
+            if (!S.editMode) {
+                const tipoEl = document.getElementById('nom-tipo');
+                tipoEl.disabled = false;
+            }
+        }
+    } catch (e) {
+        disableCausaFields(false);
+    }
+    syncCausaFields();
+}
+
+function disableCausaFields(disabled) {
+    ['nom-imputado', 'nom-victima', 'nom-delito'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.disabled = disabled; }
+    });
+}
+
+function syncCausaFields() {
+    const f = S.form;
+    const el = (id) => document.getElementById(id);
+    const i = el('nom-imputado'); const v = el('nom-victima'); const d = el('nom-delito');
+    if (i) i.value = f.imputado || '';
+    if (v) v.value = f.victima || '';
+    if (d) d.value = f.delito || '';
+    const t = el('nom-tipo');
+    if (t) t.value = f.tipo || 'general';
 }

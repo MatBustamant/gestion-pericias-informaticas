@@ -1,5 +1,4 @@
 const DB = {
-  _prefix: 'gpi_',
 
   async init() {
     try {
@@ -45,6 +44,7 @@ const DB = {
     return {
       id: `${anio}${numStr}`,
       dbId: s.id,
+      causaId: c.id,
       tipo: (s.tipo || '').toLowerCase(),
       exp: c.numExpediente || '',
       imputado: c.imputados || '',
@@ -65,7 +65,7 @@ const DB = {
   _flatToApiSolicitud(flat) {
     return {
       causa: {
-        id: 0,
+        id: flat.causaId,
         numExpediente: flat.exp,
         delito: flat.delito,
         tipo: flat.tipo ? flat.tipo.toUpperCase() : 'GENERAL',

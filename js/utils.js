@@ -46,16 +46,6 @@ function renderIcons(container = document) {
 }
 
 /* ===== UTILS ===== */
-function genId(tipo){
-    const num = S.idCounters[tipo]++;
-    return '20260' + String(num).padStart(3, '0');
-}
-function fmtId(id, tipo) {
-    const isNarco = tipo === 'narco';
-    const cssCls = isNarco ? 'narco' : 'gen';
-    const pref = isNarco ? 'NAR' : 'GEN';
-    return `<div class="id-badge ${cssCls}"><span class="pref">${pref}</span><span class="num">${esc(id)}</span></div>`;
-}
 function todayStr(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 function timeStr(){return new Date().toTimeString().slice(0,5);}
 function fmtDT(s){if(!s)return '—';const d=new Date(s);if(isNaN(d))return s;return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
@@ -85,10 +75,4 @@ function showToast(msg, type='success') {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
-}
-
-async function hashPassword(pw) {
-    const enc = new TextEncoder().encode(pw);
-    const buf = await crypto.subtle.digest('SHA-256', enc);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }

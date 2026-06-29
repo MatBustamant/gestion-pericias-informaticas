@@ -69,7 +69,7 @@ window.init_dashboard = function() {
   recent.forEach(o => {
     const el = rtpl.content.cloneNode(true);
     const tr = el.querySelector('[data-dr-idx]');
-    tr.addEventListener('click', () => nav('detalle-causa', o.id));
+    tr.addEventListener('click', () => nav('detalle-causa', o.id+'@'+o.tipo));
     el.querySelector('[data-dr-id]').textContent = (o.tipo === 'narco' ? 'NAR-' : 'GEN-') + o.id;
     el.querySelector('[data-dr-exp]').textContent = o.exp;
     el.querySelector('[data-dr-imp]').textContent = o.imputado;
@@ -79,7 +79,7 @@ window.init_dashboard = function() {
     el.querySelector('[data-dr-urg]').innerHTML = ubdg(o.urgencia);
     el.querySelector('[data-dr-est]').innerHTML = bdg(o.estado);
     el.querySelector('[data-dr-eye]').innerHTML = ic('eye', 15);
-    el.querySelector('[data-dr-eye]').addEventListener('click', e => { e.stopPropagation(); nav('detalle-causa', o.id); });
+    el.querySelector('[data-dr-eye]').addEventListener('click', e => { e.stopPropagation(); nav('detalle-causa', o.id+'@'+o.tipo); });
     tbody.appendChild(el);
   });
 };

@@ -2,9 +2,9 @@
 const S = {
   loggedIn:false, user:null, screen:'login', sidebarOpen:true, detailId:null, detalleTab:'info',
   mesaSearch:'', mesaEstado:'todos', mesaUrgencia:'todos', mesaJurisdiccion:'todos', mesaShowFilters:false, causasSearch:'', causasEstado:'todos', causasUrgencia:'todos', causasJurisdiccion:'todos', causasShowFilters:false,
-  modal:null, modalStep:1, successMsg:'',
+  modal:null, modalStep:1,
   form:{tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'},
-  aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[],nroInformeTecnico:''}, cal: { year: new Date().getFullYear(), month: new Date().getMonth() },
+  aForm:{solicitudId:'',fechaHoraInforme:'',peritosSeleccionados:[]}, cal: { year: new Date().getFullYear(), month: new Date().getMonth() },
   notifLeidas: {}, editMode: false, editId: null, editTipo: null, deleteMode: false, deleteId: null, deleteTipo: null,
   searchAction: null
 };

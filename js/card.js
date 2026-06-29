@@ -36,7 +36,7 @@ function buildCard(o, opts = {}) {
     const btn = document.createElement('button');
     btn.className = 'btn btn-primary btn-sm';
     btn.innerHTML = ic('eye', 13, 'white') + ' Ver';
-    btn.addEventListener('click', e => { e.stopPropagation(); nav('detalle-causa', o.id); });
+    btn.addEventListener('click', e => { e.stopPropagation(); nav('detalle-causa', o.id+'@'+o.tipo); });
     actions.appendChild(btn);
   } else if (opts.mode === 'asignar') {
     if (opts.confirmed) {
@@ -49,13 +49,13 @@ function buildCard(o, opts = {}) {
       btn.className = 'btn btn-primary btn-sm';
       const hasP = o.peritos.length > 0;
       btn.innerHTML = ic(hasP ? 'edit' : 'users', 13, 'white') + ' ' + (hasP ? 'Editar' : 'Asignar');
-      btn.addEventListener('click', () => openAM(o.id));
+      btn.addEventListener('click', () => openAM(o.id, o.tipo));
       actions.appendChild(btn);
       if (hasP) {
         const btn2 = document.createElement('button');
         btn2.className = 'btn btn-success btn-sm';
         btn2.innerHTML = ic('check', 13, 'white') + ' Confirmar';
-        btn2.addEventListener('click', () => confirmAsig(o.id));
+        btn2.addEventListener('click', () => confirmAsig(o.id, o.tipo));
         actions.appendChild(btn2);
       }
     }
@@ -64,7 +64,7 @@ function buildCard(o, opts = {}) {
   // Click en toda la card (solo para modo 'ver')
   if (opts.onClick) {
     card.classList.add('clickable');
-    card.addEventListener('click', () => nav('detalle-causa', o.id));
+    card.addEventListener('click', () => nav('detalle-causa', o.id+'@'+o.tipo));
   }
 
   // Clase confirmed

@@ -486,6 +486,7 @@ function updateModalData() {
 
 async function saveOficio() {
     const f = S.form;
+    
     if (!f.expediente || !f.imputado || !f.victima || !f.delito || !f.fiscal || !f.jurisdiccion || !f.descripcionSecuestros || !f.tareassolicitadas) {
         showToast('Por favor completá todos los campos obligatorios (*).', 'error');
         return;
@@ -494,6 +495,15 @@ async function saveOficio() {
     const legajoRegex = /^\d{4}-\d+$/;
     if (!legajoRegex.test(f.expediente.trim())) {
         showToast('El dato ingresado en el N° de Legajo no es válido. Debe tener el formato AÑO-NUMERO (ej. 2026-12345).', 'error');
+        return;
+    }
+
+    if (f.imputado.length > 255 || f.victima.length > 255 || f.delito.length > 255 || f.fiscal.length > 255) {
+        showToast('Los campos nominales (Imputado, Víctima, Delito, Fiscal) no pueden superar los 255 caracteres.', 'error');
+        return;
+    }
+    if (f.descripcionSecuestros.length > 2000 || f.tareassolicitadas.length > 2000) {
+        showToast('Las descripciones de Secuestros y Tareas no pueden superar los 2000 caracteres.', 'error');
         return;
     }
 

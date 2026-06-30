@@ -40,11 +40,11 @@
                 <div class="g2 form-row">
                     <div>
                         <label>Imputado/a *</label>
-                        <input type="text" id="nom-imputado" placeholder="Apellido, Nombre — DNI" oninput="S.form.imputado=this.value">
+                        <input type="text" id="nom-imputado" placeholder="Apellido, Nombre — DNI" maxlength="255" oninput="S.form.imputado=this.value">
                     </div>
                     <div>
                         <label>Víctima *</label>
-                        <input type="text" id="nom-victima" placeholder="Persona física o jurídica" oninput="S.form.victima=this.value">
+                        <input type="text" id="nom-victima" placeholder="Persona física o jurídica" maxlength="255" oninput="S.form.victima=this.value">
                     </div>
                 </div>
                 <div class="form-row">
@@ -54,7 +54,7 @@
                 <div class="g2 form-row">
                     <div>
                         <label>Fiscal solicitante *</label>
-                        <input type="text" id="nom-fiscal" placeholder="Dr/Dra. Apellido Nombre" oninput="S.form.fiscal=this.value">
+                        <input type="text" id="nom-fiscal" placeholder="Dr/Dra. Apellido Nombre" maxlength="255" oninput="S.form.fiscal=this.value">
                     </div>
                     <div>
                         <label>Circunscripción *</label>
@@ -71,11 +71,11 @@
                 </div>
                 <div class="form-row">
                     <label>Descripción general de los secuestros recibidos *</label>
-                    <textarea id="nom-secuestros" placeholder="Detallar elementos secuestrados: marca, modelo, número de serie..." oninput="S.form.descripcionSecuestros=this.value"></textarea>
+                    <textarea id="nom-secuestros" placeholder="Detallar elementos secuestrados: marca, modelo, número de serie..." maxlength="2000" oninput="S.form.descripcionSecuestros=this.value"></textarea>
                 </div>
                 <div class="form-row">
                     <label>Tareas pedidas *</label>
-                    <textarea id="nom-tareas" placeholder="Describir las pericias y análisis requeridos..." oninput="S.form.tareassolicitadas=this.value"></textarea>
+                    <textarea id="nom-tareas" placeholder="Describir las pericias y análisis requeridos..." maxlength="2000" oninput="S.form.tareassolicitadas=this.value"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="upload-area">

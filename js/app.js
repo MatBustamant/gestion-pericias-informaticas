@@ -484,55 +484,61 @@ function updateModalData() {
     }
 }
 
-async function saveOficio(){
-  const f=S.form;
-  if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){
-      showToast('Por favor completá todos los campos obligatorios (*).', 'error');
-      return;
-  }
-  
-  if (S.editMode) {
-      const req = S.solicitudes.find(s => s.id === S.editId && s.tipo === S.editTipo);
-      if (req) {
-          const flatData = {
-              tipo: req.tipo,
-              causaId: req.causaId,
-              exp: f.expediente,
-              imputado: f.imputado,
-              victima: f.victima,
-              delito: f.delito,
-              fiscal: f.fiscal,
-              jur: f.jurisdiccion,
-              secuestros: f.descripcionSecuestros,
-              tareas: f.tareassolicitadas,
-              urgencia: f.urgencia,
-              peritos: req.peritos,
-              fhi: req.fhi,
-              estado: req.estado
-          };
-          await DB.modificarSolicitud(req.dbId, flatData);
-      }
-      closeM();
-      showToast(`Solicitud ${(req.tipo==='narco'?'NAR-':'GEN-')}${req.id} modificada exitosamente.`);
-  } else {
-      const flatData = {
-          tipo: f.tipo,
-          exp: f.expediente,
-          imputado: f.imputado,
-          victima: f.victima,
-          delito: f.delito,
-          fiscal: f.fiscal,
-          jur: f.jurisdiccion,
-          secuestros: f.descripcionSecuestros,
-          tareas: f.tareassolicitadas,
-          urgencia: f.urgencia
-      };
-      const creada = await DB.crearSolicitud(flatData);
-      closeM();
-      showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${creada.id}`);
-  }
-  
-  nav(S.screen);
+async function saveOficio() {
+    const f = S.form;
+    if (!f.expediente || !f.imputado || !f.victima || !f.delito || !f.fiscal || !f.jurisdiccion || !f.descripcionSecuestros || !f.tareassolicitadas) {
+        showToast('Por favor completá todos los campos obligatorios (*).', 'error');
+        return;
+    }
+
+    const legajoRegex = /^\d{4}-\d+$/;
+    if (!legajoRegex.test(f.expediente.trim())) {
+        showToast('El dato ingresado en el N° de Legajo no es válido. Debe tener el formato AÑO-NUMERO (ej. 2026-12345).', 'error');
+        return;
+    }
+
+    if (S.editMode) {
+        const req = S.solicitudes.find(s => s.id === S.editId && s.tipo === S.editTipo);
+        if (req) {
+            const flatData = {
+                tipo: req.tipo,
+                causaId: req.causaId,
+                exp: f.expediente,
+                imputado: f.imputado,
+                victima: f.victima,
+                delito: f.delito,
+                fiscal: f.fiscal,
+                jur: f.jurisdiccion,
+                secuestros: f.descripcionSecuestros,
+                tareas: f.tareassolicitadas,
+                urgencia: f.urgencia,
+                peritos: req.peritos,
+                fhi: req.fhi,
+                estado: req.estado
+            };
+            await DB.modificarSolicitud(req.dbId, flatData);
+        }
+        closeM();
+        showToast(`Solicitud ${(req.tipo === 'narco' ? 'NAR-' : 'GEN-')}${req.id} modificada exitosamente.`);
+    } else {
+        const flatData = {
+            tipo: f.tipo,
+            exp: f.expediente,
+            imputado: f.imputado,
+            victima: f.victima,
+            delito: f.delito,
+            fiscal: f.fiscal,
+            jur: f.jurisdiccion,
+            secuestros: f.descripcionSecuestros,
+            tareas: f.tareassolicitadas,
+            urgencia: f.urgencia
+        };
+        const creada = await DB.crearSolicitud(flatData);
+        closeM();
+        showToast(`Solicitud registrada exitosamente: ${(f.tipo === 'narco' ? 'NAR-' : 'GEN-')}${creada.id}`);
+    }
+
+    nav(S.screen);
 }
 
 window.confirmarEliminacion = async function() {

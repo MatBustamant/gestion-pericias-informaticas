@@ -25,7 +25,8 @@
                     </div>
                     <div>
                         <label>N° de Legajo de Causa *</label>
-                        <input type="text" id="nom-expediente" placeholder="ej. 12345/2026" oninput="S.form.expediente=this.value">
+                        <input type="text" id="nom-expediente" placeholder="ej. 2026-12345" pattern="\d{4}-\d+"
+                            title="El formato debe ser AÑO-NUMERO (ej. 2026-12345)" oninput="S.form.expediente=this.value">
                     </div>
                     <div>
                         <label>Urgencia *</label>

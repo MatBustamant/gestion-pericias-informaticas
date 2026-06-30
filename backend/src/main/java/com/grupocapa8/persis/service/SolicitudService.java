@@ -89,6 +89,7 @@ public class SolicitudService implements ServiceGenerico<SolicitudRequest> {
             req.getSolicitud().setCausa(causa);
         } else {
             // Mismo expediente → actualizar datos de la causa
+            req.getCausa().setId(causaActual.getId());
             causaDAO.actualizar(req.getCausa());
             req.getSolicitud().setCausa(req.getCausa());
         }

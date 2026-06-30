@@ -496,6 +496,7 @@ async function saveOficio(){
       if (req) {
           const flatData = {
               tipo: req.tipo,
+              causaId: req.causaId,
               exp: f.expediente,
               imputado: f.imputado,
               victima: f.victima,

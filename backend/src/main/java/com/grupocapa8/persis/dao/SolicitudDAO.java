@@ -79,7 +79,7 @@ public class SolicitudDAO {
             con.setAutoCommit(false);
 
             // 1. Generar num_interno desde Contador_Solicitud
-            String sqlCont = "INSERT INTO Contador_Solicitud (tipo, anio, ultimo) VALUES (?, ?, 0) "
+            String sqlCont = "INSERT INTO Contador_Solicitud (tipo, anio, ultimo) VALUES (?, ?, 1) "
                     + "ON CONFLICT(tipo, anio) DO UPDATE SET ultimo = ultimo + 1 RETURNING ultimo";
             try (PreparedStatement ps = con.prepareStatement(sqlCont)) {
                 ps.setString(1, s.getTipo().toString().toLowerCase());

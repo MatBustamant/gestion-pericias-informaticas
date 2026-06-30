@@ -555,6 +555,14 @@ window.confirmarEliminacion = async function() {
 async function saveAsig(){
   const f=S.aForm;
   if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
+
+  const selectedDate = new Date(f.fechaHoraInforme);
+  const currentDate = new Date();
+  if (selectedDate < currentDate) {
+      showToast('La fecha y hora asignada no es válida porque ya pasó. Por favor ingresá una fecha futura.', 'error');
+      return;
+  }
+
   if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
   const o=S.solicitudes.find(x=>x.id===f.solicitudId && x.tipo===f.solicitudTipo);
   const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';

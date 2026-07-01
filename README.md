@@ -26,25 +26,25 @@ Las caracteristicas que tiene son muchas, las criticas son las siguientes:
 
 <h2> Pantalla inicial </h2>
 
-![alt text](image-1.png)
+![alt text](/docs/images/image-1.png)
 Pantalla de inicio. Los usuarios pueden ingresar y hay distintas vistas de acuerdo al tipo de usuario.
 
 <h3> Mesa de entrada </h3>
 
-![alt text](image-2.png)
-![alt text](image-3.png)
-![alt text](image-4.png)
-![alt text](image-5.png)
+![alt text](/docs/images/image-2.png)
+![alt text](/docs/images/image-3.png)
+![alt text](/docs/images/image-4.png)
+![alt text](/docs/images/image-5.png)
 Mesa de entrada se encarga en dar de alta una solicitud, regitrandola, asignandole peritos y puede consultar sus estados y descripciones en general
 
 <h3> Coordinador </h3>
 
-![alt text](image-6.png)
-![alt text](image-7.png)
+![alt text](/docs/images/image-6.png)
+![alt text](/docs/images/image-7.png)
 Coordinador solo se encarga de consultar por las solicitudes
 
 <h3> Perito informatico </h3>
 
-![alt text](image-8.png)
-![alt text](image-9.png)
+![alt text](/docs/images/image-8.png)
+![alt text](/docs/images/image-9.png)
 Cada perito puede ver su solicitud a la cual fue asignado

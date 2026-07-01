@@ -46,21 +46,11 @@ function renderIcons(container = document) {
 }
 
 /* ===== UTILS ===== */
-function genId(tipo){
-    const num = S.idCounters[tipo]++;
-    return '20260' + String(num).padStart(3, '0');
-}
-function fmtId(id, tipo) {
-    const isNarco = tipo === 'narco';
-    const cssCls = isNarco ? 'narco' : 'gen';
-    const pref = isNarco ? 'NAR' : 'GEN';
-    return `<div class="id-badge ${cssCls}"><span class="pref">${pref}</span><span class="num">${esc(id)}</span></div>`;
-}
 function todayStr(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 function timeStr(){return new Date().toTimeString().slice(0,5);}
 function fmtDT(s){if(!s)return '—';const d=new Date(s);if(isNaN(d))return s;return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
-function bdg(e){const m={pendiente:'bp',['en-proceso']:'bi',resuelto:'br'};const l={pendiente:'Pendiente',['en-proceso']:'En proceso',resuelto:'Resuelto'};return '<span class="badge '+(m[e]||'bp')+'">'+l[e]+'</span>';}
-function ubdg(u){const m={alta:'bu-a',media:'bu-m',baja:'bu-b'};return '<span class="badge '+(m[u]||'bu-m')+'">'+u.charAt(0).toUpperCase()+u.slice(1)+'</span>';}
+function bdg(e){const m={pendiente:'bp',['en-proceso']:'bi',resuelto:'br'};const l={pendiente:'Pendiente',['en-proceso']:'En proceso',resuelto:'Resuelto'};return '<span class="badge badge-estado '+(m[e]||'bp')+'">'+l[e]+'</span>';}
+function ubdg(u){const m={alta:'bu-a',media:'bu-m',baja:'bu-b'};return '<span class="badge badge-urgencia '+(m[u]||'bu-m')+'">'+u.charAt(0).toUpperCase()+u.slice(1)+'</span>';}
 function screenLbl(){const s=S.screen==='detalle-causa'?'causas':S.screen;return (NAV.find(n=>n.id===s)||{lbl:'Detalle'}).lbl;}
 
 function showToast(msg, type='success') {
@@ -86,100 +76,3 @@ function showToast(msg, type='success') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-async function hashPassword(pw) {
-    const enc = new TextEncoder().encode(pw);
-    const buf = await crypto.subtle.digest('SHA-256', enc);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-window.chgMonth = function(d) {
-    S.cal.month += d;
-    if(S.cal.month > 11) { S.cal.month = 0; S.cal.year++; }
-    if(S.cal.month < 0) { S.cal.month = 11; S.cal.year--; }
-    
-    // Disparadores reactivos según la pantalla actual
-    if(S.screen === 'dashboard' && window.init_dashboard) init_dashboard();
-    if(S.screen === 'asignacion' && window.init_asignacion) init_asignacion();
-    
-    // NUEVA LÓGICA: Si hay un modal abierto, forzamos su actualización
-    if(S.modal) updateModalData();
-};
-
-// Se elimina el parámetro selectedPeritos, ahora solo recibe conflictIds
-window.buildCalendarHTML = function(conflictIds = [], tentativeEvent = null) {
-    const y = S.cal.year, m = S.cal.month;
-    const firstDay = new Date(y, m, 1).getDay();
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-    let events = {};
-    S.solicitudes.forEach(o => {
-        if(o.fhi && o.estado === 'en-proceso') {
-            const d = new Date(o.fhi);
-            if(d.getFullYear() === y && d.getMonth() === m) {
-                const day = d.getDate();
-                if(!events[day]) events[day] = [];
-                events[day].push(o);
-            }
-        }
-    });
-
-    let html = `<div class="cal-header">
-        <button class="btn-icon" onclick="chgMonth(-1)">${ic('arrowL', 14)}</button>
-        <div style="font-weight:600; font-size:14px;">${monthNames[m]} ${y}</div>
-        <button class="btn-icon" onclick="chgMonth(1)" style="transform:rotate(180deg)">${ic('arrowL', 14)}</button>
-    </div>
-    <div class="cal-grid" style="height: calc(100% - 45px); flex:1;">
-        <div class="cal-dow">Dom</div><div class="cal-dow">Lun</div><div class="cal-dow">Mar</div>
-        <div class="cal-dow">Mié</div><div class="cal-dow">Jue</div><div class="cal-dow">Vie</div><div class="cal-dow">Sáb</div>`;
-
-    for(let i = 0; i < firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
-
-    for(let i = 1; i <= daysInMonth; i++) {
-        let evHTML = '';
-        let bgClass = 'cal-bg-gray'; 
-        
-        // Comprobar si el evento tentativo coincide con este día
-        const currentDateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-        const hasTentative = tentativeEvent && tentativeEvent.date === currentDateStr;
-        
-        let dayEvents = events[i] ? [...events[i]] : [];
-        
-        if(dayEvents.length > 0 || hasTentative) {
-            // Ajustamos el color de fondo considerando el evento tentativo
-            const count = dayEvents.length + (hasTentative ? 1 : 0);
-            if(count === 1) bgClass = 'cal-bg-green';
-            else if(count === 2) bgClass = 'cal-bg-yellow';
-            else bgClass = 'cal-bg-red'; 
-
-            evHTML = dayEvents.map(e => {
-                const colorCls = e.urgencia === 'alta' ? 'c-ev-alta' : (e.urgencia === 'media' ? 'c-ev-media' : 'c-ev-baja');
-                const expertName = e.peritos.length > 0 ? e.peritos[0].split(' ')[0] : 'S/A';
-                const time = e.fhi.split('T')[1];
-                const isConflict = conflictIds && conflictIds.includes(e.id) ? ' conflict' : '';
-                
-                return `<div class="cal-event ${colorCls}${isConflict}" title="${e.peritos.join(', ')} - Exp. ${e.exp}">
-                    <strong>${time}</strong> ${expertName}
-                </div>`;
-            }).join('');
-
-            // Inyectar el evento Borrador/Tentativo visualmente distinto
-            if (hasTentative) {
-                const expertName = tentativeEvent.peritos[0].split(' ')[0];
-                const extraLabel = tentativeEvent.peritos.length > 1 ? ` (+${tentativeEvent.peritos.length - 1})` : '';
-                
-                evHTML += `<div class="cal-event" style="background:#EFF6FF; border: 1px dashed #3B82F6; border-left: 3px solid #3B82F6; color:#1D4ED8;" title="Borrador de asignación: ${tentativeEvent.peritos.join(', ')}">
-                    <strong>${tentativeEvent.time}</strong> ${expertName}${extraLabel} (Nuevo)
-                </div>`;
-            }
-        }
-
-        html += `<div class="cal-day ${bgClass}">
-            <div class="cal-date">${i}</div>
-            <div class="cal-ev-wrap">${evHTML}</div>
-        </div>`;
-    }
-    html += `</div>`;
-    return html;
-};

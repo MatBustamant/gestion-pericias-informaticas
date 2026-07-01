@@ -1,5 +1,34 @@
-<div class="page-header" id="asig-header"></div>
-<div class="asig-grid">
-    <div><div class="card" style="margin-bottom:0;"><div class="card-head"><div class="card-title">Peritos Registrados</div></div><div id="asig-peritos"></div></div></div>
-    <div id="asig-solicitudes"></div>
+<div class="page-header">
+    <div>
+        <div class="page-title">Asignación de Peritos</div>
+        <div class="page-sub" id="asig-subtitle">0 solicitudes pendientes de asignación</div>
+    </div>
 </div>
+<div class="asig-grid">
+    <div>
+        <div class="card" style="margin-bottom:0;">
+            <div class="card-head">
+                <div class="card-title">Peritos Registrados</div>
+            </div>
+            <div id="asig-peritos"></div>
+        </div>
+    </div>
+    <div>
+        <div id="asig-solicitudes"></div>
+        <div id="asig-empty" class="hidden">
+            <div class="card">
+                <div class="empty-state">
+                    <p>No hay solicitudes pendientes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<template id="perito-item-tpl">
+    <div class="perito-item">
+        <div class="perito-av" data-pa-ini></div>
+        <div style="flex:1;">
+            <div class="perito-name" data-pa-name></div>
+        </div>
+    </div>
+</template>

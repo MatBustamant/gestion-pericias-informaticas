@@ -3,7 +3,7 @@ const COMPS = { sidebar: '', topbar: '' };
 
 /* ===== ROUTER Y COMPONENTES ===== */
 async function nav(screen, id = '') {
-    if (screen === 'detalle-causa' && id) { S.detailId = id; S.detalleTab = 'info'; }
+    if (screen === 'detalle-causa' && id) { const p=id.split('@'); S.detailId=p[0]; S.detailTipo=p[1]; S.detalleTab='info'; }
     S.screen = screen;
     const app = document.getElementById('app');
 
@@ -102,9 +102,10 @@ async function initApp() {
         COMPS.sidebar = await fetch('components/sidebar.html').then(r => r.text());
         COMPS.topbar = await fetch('components/topbar.html').then(r => r.text());
         
-        // ¡AGREGAMOS LAS DOS LÍNEAS PARA LOS MODALES!
         COMPS.modal_nueva_solicitud = await fetch('components/modal-nueva-solicitud.html').then(r => r.text());
         COMPS.modal_asignar_perito = await fetch('components/modal-asignar-perito.html').then(r => r.text());
+        COMPS.card = await fetch('components/card-solicitud.html').then(r => r.text());
+        COMPS.calendar = await fetch('components/calendar.html').then(r => r.text());
 
         await DB.init();
 
@@ -127,10 +128,98 @@ async function initApp() {
 document.addEventListener('DOMContentLoaded', initApp);
 
 /* ===== MODALS LOGIC ===== */
-function openModal(t){S.modal=t;S.modalStep=1;if(t==='nueva-solicitud')S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'}; rmModal(); }
-function openAM(id){const o=S.solicitudes.find(x=>x.id===id);S.modal='asignar-perito';S.aForm={solicitudId:id,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id}; rmModal(); }
+function openAM(id,tipo){const o=S.solicitudes.find(x=>x.id===id && x.tipo===tipo);S.modal='asignar-perito';S.aForm={solicitudId:id,solicitudTipo:tipo,fechaHoraInforme:o?.fhi||'',peritosSeleccionados:[...(o?.peritos||[])],nroInformeTecnico:o.id};if (o?.fhi) {const d = new Date(o.fhi);if (!isNaN(d)) { S.cal.year = d.getFullYear(); S.cal.month = d.getMonth(); }} rmModal(); }
+
+window.abrirModalBuscar = function(accion) {
+    S.searchAction = accion;
+    S.editMode = false; S.editTipo = null;
+    S.deleteMode = false; S.deleteTipo = null;
+    S.editId = null;
+    S.deleteId = null;
+    
+    // Invocamos el modal que YA sabemos que funciona
+    S.modal = 'nueva-solicitud';
+    S.modalStep = 0; // Usamos un "Paso 0" personalizado para la búsqueda
+    
+    rmModal();
+};
+
+window.ejecutarBusquedaModal = function() {
+    const inputEl = document.getElementById('search-id-input');
+    if (!inputEl) return;
+    
+    const input = inputEl.value.trim();
+    if (!input) {
+        showToast('Por favor, ingrese un número interno.', 'error');
+        return;
+    }
+    
+    const match = input.match(/^(GEN-|NAR-)?\s*(\d+)/i);
+    if (!match) {
+        showToast('Formato inválido. Usá GEN-XXXXX o NAR-XXXXX.', 'error');
+        return;
+    }
+    
+    const prefix = match[1] ? match[1].toUpperCase() : null;
+    const cleanId = match[2];
+    const tipoFiltro = prefix === 'NAR-' ? 'narco' : (prefix === 'GEN-' ? 'general' : null);
+    
+    let candidates = S.solicitudes;
+    if (tipoFiltro) candidates = candidates.filter(s => s.tipo === tipoFiltro);
+    candidates = candidates.filter(s => s.id === cleanId);
+    
+    if (candidates.length === 0) {
+        showToast('No se encontró ninguna solicitud con ese número interno.', 'error');
+        return;
+    }
+    if (candidates.length > 1) {
+        showToast('El ID existe en múltiples tipos. Usá el prefijo GEN- o NAR-.', 'error');
+        return;
+    }
+    
+    const req = candidates[0];
+    
+    S.form = {
+        tipo: req.tipo, expediente: req.exp, imputado: req.imputado, victima: req.victima,
+        delito: req.delito, fiscal: req.fiscal, jurisdiccion: req.jur,
+        descripcionSecuestros: req.secuestros, tareassolicitadas: req.tareas, urgencia: req.urgencia
+    };
+    
+    if (S.searchAction === 'edit') {
+        S.editMode = true; S.editId = cleanId; S.editTipo = req.tipo; S.editExpOriginal = req.exp;
+        S.deleteMode = false; S.deleteId = null; S.deleteTipo = null;
+        S.modalStep = 1;
+    } else if (S.searchAction === 'delete') {
+        S.deleteMode = true; S.deleteId = cleanId; S.deleteTipo = req.tipo;
+        S.editMode = false; S.editId = null; S.editTipo = null;
+        S.modalStep = 2;
+    }
+    
+    rmModal();
+};
+
+function openModal(t){
+    S.modal=t; 
+    S.modalStep=1; 
+    if(t==='nueva-solicitud'){
+        S.editMode=false; S.editId=null; S.editTipo=null; S.deleteMode=false; S.deleteId=null; S.deleteTipo=null; S.editExpOriginal = '';
+        S.form={tipo:'general', expediente:'',imputado:'',victima:'',delito:'',fiscal:'',jurisdiccion:'',descripcionSecuestros:'',tareassolicitadas:'',urgencia:'media'};
+    } 
+    rmModal(); 
+}
+function cancelModal(){
+    if (S.modal === 'asignar-perito') {
+        showToast('Asignación cancelada.', 'warning');
+    } else if (S.modal === 'nueva-solicitud') {
+        if (S.deleteMode) showToast('Desestimación cancelada.', 'warning');
+        else if (S.editMode) showToast('Modificación cancelada.', 'warning');
+        else if (S.modalStep === 0) showToast('Búsqueda cancelada.', 'warning');
+        else showToast('Registro cancelado.', 'warning');
+    }
+    closeM();
+}
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
-function closeMOI(e){if(e.target.id==='moverlay')closeM();}
+function closeMOI(e){if(e.target.id==='moverlay')cancelModal();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
 function mBack(){S.modalStep=1; updateModalData(); } // Acá tampoco
 function toggleP(nombre){if(!S.aForm.peritosSeleccionados)S.aForm.peritosSeleccionados=[];const i=S.aForm.peritosSeleccionados.indexOf(nombre);if(i>=0)S.aForm.peritosSeleccionados.splice(i,1);else S.aForm.peritosSeleccionados.push(nombre); updateModalData(); }
@@ -158,12 +247,11 @@ function rmModal() {
     }
 }
 
-// Esta es la estrella del show: actualiza los valores del DOM sin recargar el HTML
 function updateModalData() {
     if (S.modal === 'nueva-solicitud') {
         const f = S.form;
         
-        // 1. Setear valores de los inputs (Paso 1)
+        // 1. Setear valores
         document.getElementById('nom-tipo').value = f.tipo || 'general';
         document.getElementById('nom-expediente').value = f.expediente || '';
         document.getElementById('nom-urgencia').value = f.urgencia || 'media';
@@ -175,41 +263,141 @@ function updateModalData() {
         document.getElementById('nom-secuestros').value = f.descripcionSecuestros || '';
         document.getElementById('nom-tareas').value = f.tareassolicitadas || '';
 
-        // 2. Controlar visibilidad de pasos (alternando la clase .hidden de tu CSS)
+        const tipoEl = document.getElementById('nom-tipo');
+        tipoEl.disabled = (S.editMode || S.deleteMode);
+        const expInput = document.getElementById('nom-expediente');
+        if (expInput && !expInput.dataset.lookup) {
+            expInput.dataset.lookup = '1';
+            expInput.addEventListener('input', function() {
+                clearTimeout(_lookupTimer);
+                _lookupTimer = setTimeout(() => {
+                    const disableIfFound = !S.editMode || this.value !== S.editExpOriginal;
+                    lookupExpediente(this.value, disableIfFound);
+                }, 400);
+            });
+        }
+        // 2. Controlar textos dinámicos
+        const titleEl = document.querySelector('.modal-title');
+        const subEl = document.getElementById('nom-modal-sub');
+        
+        if (S.modalStep === 0) {
+            if (titleEl) titleEl.innerText = 'Buscar Solicitud';
+            if (subEl) subEl.innerText = 'Ingrese el identificador del registro';
+        } else {
+            if (titleEl) {
+                if (S.deleteMode) titleEl.innerText = 'Desestimar Solicitud';
+                else if (S.editMode) titleEl.innerText = 'Modificar Solicitud';
+                else titleEl.innerText = 'Registrar Nueva Solicitud';
+            }
+            if (subEl) {
+                if (S.deleteMode) subEl.innerText = 'Revisión y confirmación de desestimación';
+                else subEl.innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
+            }
+        }
+
+        // 3. Crear contenedor de Búsqueda (Paso 0) dinámicamente si no existe
+        let searchBox = document.getElementById('nom-step-0');
+        if (!searchBox) {
+            const step1 = document.getElementById('nom-step-1');
+            if (step1) {
+                searchBox = document.createElement('div');
+                searchBox.id = 'nom-step-0';
+                searchBox.innerHTML = `
+                    <div class="alert alert-info" style="margin-bottom: 16px;">
+                        <span><strong>ⓘ</strong> Indique el número correlativo o el código con su prefijo (GEN- o NAR-).</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Número Interno *</label>
+                        <input type="text" id="search-id-input" class="form-control" placeholder="Ej. 20260248 o GEN-20260248" style="width: 100%;" autocomplete="off">
+                    </div>
+                `;
+                step1.parentNode.insertBefore(searchBox, step1);
+            }
+        }
+
+        // 4. Mostrar/Ocultar los pasos correspondientes
+        if (searchBox) searchBox.classList.toggle('hidden', S.modalStep !== 0);
         document.getElementById('nom-step-1').classList.toggle('hidden', S.modalStep !== 1);
         document.getElementById('nom-step-2').classList.toggle('hidden', S.modalStep !== 2);
         
-        // 3. Barra de progreso y títulos
-        document.getElementById('nom-modal-sub').innerText = S.modalStep === 1 ? 'Paso 1 de 2 — Datos de la solicitud' : 'Paso 2 de 2 — Revisión y confirmación';
-        document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
-        document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+        // 5. Barra de progreso
+        if (S.modalStep === 0) {
+            document.getElementById('nom-bar-1').style.background = 'var(--border)';
+            document.getElementById('nom-bar-2').style.background = 'var(--border)';
+        } else if (S.deleteMode) {
+            document.getElementById('nom-bar-1').style.background = 'var(--destructive)';
+            document.getElementById('nom-bar-2').style.background = 'var(--destructive)';
+        } else {
+            document.getElementById('nom-bar-1').style.background = S.modalStep >= 1 ? 'var(--accent)' : 'var(--border)';
+            document.getElementById('nom-bar-2').style.background = S.modalStep >= 2 ? 'var(--accent)' : 'var(--border)';
+        }
 
-        // 4. Renderizar resumen dinámico (Paso 2)
+        // 6. Resumen (Paso 2)
         if (S.modalStep === 2) {
+            const req = S.deleteMode ? S.solicitudes.find(x => x.id === S.deleteId && x.tipo === S.deleteTipo) : (S.editMode ? S.solicitudes.find(x => x.id === S.editId && x.tipo === S.editTipo) : null);
+            const lblEstado = req ? (req.estado === 'en-proceso' ? 'En proceso' : (req.estado === 'resuelto' ? 'Resuelto' : 'Pendiente')) : 'Pendiente';
+            
             const rows = [
                 ['N° de Legajo de Causa', f.expediente || '—'],
+                ['Tipo de Solicitud', f.tipo === 'narco' ? 'Narco Menudeo' : 'General'],
                 ['Imputado/a', f.imputado || '—'],
                 ['Víctima', f.victima || '—'],
                 ['Delito', f.delito || '—'],
                 ['Fiscal', f.fiscal || '—'],
                 ['Circunscripción', f.jurisdiccion || '—'],
                 ['Urgencia', f.urgencia],
-                ['Estado (auto)', 'Pendiente']
+                ['Estado actual', lblEstado]
             ];
             document.getElementById('nom-summary-rows').innerHTML = rows.map(([k, v]) => 
                 `<div class="summary-row"><span class="skey">${k}</span><span class="sval">${esc(v)}</span></div>`
             ).join('');
+
+            const summaryTitle = document.querySelector('#nom-step-2 .summary-box h3');
+            if (summaryTitle) {
+                if (S.deleteMode) { summaryTitle.innerText = 'Resumen de la solicitud a desestimar'; summaryTitle.style.color = 'var(--destructive)'; }
+                else if (S.editMode) { summaryTitle.innerText = 'Resumen de la solicitud a modificar'; summaryTitle.style.color = 'var(--primary)'; }
+                else { summaryTitle.innerText = 'Resumen de la solicitud a registrar'; summaryTitle.style.color = 'var(--primary)'; }
+            }
+
+            const alertBox = document.querySelector('#nom-step-2 .alert');
+            if (alertBox) {
+                if (S.deleteMode) {
+                    alertBox.className = 'alert alert-error';
+                    alertBox.innerHTML = `<span><strong>Atención:</strong> Esta acción no se puede deshacer.</span>`;
+                } else if (S.editMode) {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.innerHTML = `<span>Verifique los datos antes de confirmar la modificación.</span>`;
+                } else {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.innerHTML = `<span>Se asignará automáticamente un N° interno. El estado inicial será <strong>Pendiente</strong>.</span>`;
+                }
+            }
         }
 
-        // 5. Botones dinámicos del footer
-        document.getElementById('nom-modal-foot').innerHTML = S.modalStep === 1 
-            ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar ${ic('chevR', 13, 'white')}</button>`
-            : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">Confirmar registro</button>`;
-    } 
+        // 7. Botones del footer
+        const foot = document.getElementById('nom-modal-foot');
+        if (S.modalStep === 0) {
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button><button class="btn btn-primary" onclick="ejecutarBusquedaModal()">Continuar</button>`;
+        } else if (S.deleteMode) {
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar desestimación</button>`;
+        } else {
+            foot.innerHTML = S.modalStep === 1 
+                ? `<button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar</button>`
+                : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">${S.editMode ? 'Confirmar modificación' : 'Confirmar registro'}</button>`;
+        }
+
+        // 8. Foco de accesibilidad
+        if (S.modalStep === 0) {
+            setTimeout(() => {
+                const input = document.getElementById('search-id-input');
+                if (input) input.focus();
+            }, 50);
+        }
+    }
     
     else if (S.modal === 'asignar-perito') {
         const f = S.aForm;
-        const o = S.solicitudes.find(x => x.id === f.solicitudId);
+        const o = S.solicitudes.find(x => x.id === f.solicitudId && x.tipo === f.solicitudTipo);
         const p = S.peritos;
 
         document.getElementById('am-modal-sub').innerText = o ? `${(o.tipo==='narco'?'NAR-':'GEN-')}${esc(o.id)} — ${esc(o.imputado)}` : '';
@@ -295,41 +483,131 @@ function updateModalData() {
             };
         }
 
-        // MODIFICADO: Inyectar el calendario lateral pasándole las IDs conflictivas Y el evento tentativo
         const calContainer = document.getElementById('am-calendar-container');
         if (calContainer) {
-            calContainer.innerHTML = buildCalendarHTML(overlappingIds, tentativeEvent);
+            calContainer.innerHTML = '';
+            calContainer.appendChild(buildCalendar({
+                conflictIds: overlappingIds,
+                tentativeEvent: tentativeEvent,
+                onMonthChange: () => updateModalData()
+            }));
         }
     }
 }
 
-async function saveOficio(){
-  const f=S.form;
-  if(!f.expediente||!f.imputado||!f.victima||!f.delito||!f.fiscal||!f.jurisdiccion||!f.descripcionSecuestros||!f.tareassolicitadas){alert('Por favor complet\u00e1 todos los campos obligatorios (*).');return;}
-  const id=genId(f.tipo);
-  S.solicitudes.unshift({id,tipo:f.tipo,exp:f.expediente,imputado:f.imputado,victima:f.victima,delito:f.delito,fiscal:f.fiscal,jur:f.jurisdiccion,secuestros:f.descripcionSecuestros,tareas:f.tareassolicitadas,urgencia:f.urgencia,estado:'pendiente',fhi:null,peritos:[]});
-  closeM();
-  showToast(`Solicitud registrada exitosamente: ${(f.tipo==='narco'?'NAR-':'GEN-')}${id}`);
-  await DB.saveSolicitudes();
-  await DB.saveIdCounters();
-  nav(S.screen);
+async function saveOficio() {
+    const f = S.form;
+    
+    if (!f.expediente || !f.imputado || !f.victima || !f.delito || !f.fiscal || !f.jurisdiccion || !f.descripcionSecuestros || !f.tareassolicitadas) {
+        showToast('Por favor completá todos los campos obligatorios (*).', 'error');
+        return;
+    }
+
+    const legajoRegex = /^\d{4}-\d+$/;
+    if (!legajoRegex.test(f.expediente.trim())) {
+        showToast('El dato ingresado en el N° de Legajo no es válido. Debe tener el formato AÑO-NUMERO (ej. 2026-12345).', 'error');
+        return;
+    }
+
+    if (f.imputado.length > 255 || f.victima.length > 255 || f.delito.length > 255 || f.fiscal.length > 255) {
+        showToast('Los campos nominales (Imputado, Víctima, Delito, Fiscal) no pueden superar los 255 caracteres.', 'error');
+        return;
+    }
+    if (f.descripcionSecuestros.length > 2000 || f.tareassolicitadas.length > 2000) {
+        showToast('Las descripciones de Secuestros y Tareas no pueden superar los 2000 caracteres.', 'error');
+        return;
+    }
+
+    if (S.editMode) {
+        const req = S.solicitudes.find(s => s.id === S.editId && s.tipo === S.editTipo);
+        if (req) {
+            const flatData = {
+                tipo: req.tipo,
+                causaId: req.causaId,
+                exp: f.expediente,
+                imputado: f.imputado,
+                victima: f.victima,
+                delito: f.delito,
+                fiscal: f.fiscal,
+                jur: f.jurisdiccion,
+                secuestros: f.descripcionSecuestros,
+                tareas: f.tareassolicitadas,
+                urgencia: f.urgencia,
+                peritos: req.peritos,
+                fhi: req.fhi,
+                estado: req.estado
+            };
+            await DB.modificarSolicitud(req.dbId, flatData);
+        }
+        closeM();
+        showToast(`Solicitud ${(req.tipo === 'narco' ? 'NAR-' : 'GEN-')}${req.id} modificada exitosamente.`);
+    } else {
+        const flatData = {
+            tipo: f.tipo,
+            exp: f.expediente,
+            imputado: f.imputado,
+            victima: f.victima,
+            delito: f.delito,
+            fiscal: f.fiscal,
+            jur: f.jurisdiccion,
+            secuestros: f.descripcionSecuestros,
+            tareas: f.tareassolicitadas,
+            urgencia: f.urgencia
+        };
+        const creada = await DB.crearSolicitud(flatData);
+        closeM();
+        showToast(`Solicitud registrada exitosamente: ${(f.tipo === 'narco' ? 'NAR-' : 'GEN-')}${creada.id}`);
+    }
+
+    nav(S.screen);
 }
+
+window.confirmarEliminacion = async function() {
+    if (!S.deleteMode || !S.deleteId) return;
+    const req = S.solicitudes.find(s => s.id === S.deleteId && s.tipo === S.deleteTipo);
+    if (!req) return;
+    const prefijo = req.tipo === 'narco' ? 'NAR-' : 'GEN-';
+    await DB.eliminarSolicitud(req.dbId);
+    closeM();
+    showToast(`Solicitud ${prefijo}${req.id} desestimada correctamente.`);
+    nav(S.screen);
+};
 
 async function saveAsig(){
   const f=S.aForm;
   if(!f.fechaHoraInforme){alert('Por favor indicá la fecha y hora para la apertura del informe.');return;}
+
+  const selectedDate = new Date(f.fechaHoraInforme);
+  const currentDate = new Date();
+  if (selectedDate < currentDate) {
+      showToast('La fecha y hora asignada no es válida porque ya pasó. Por favor ingresá una fecha futura.', 'error');
+      return;
+  }
+
   if(!f.peritosSeleccionados||f.peritosSeleccionados.length===0){alert('Por favor seleccioná al menos un perito.');return;}
-  const o=S.solicitudes.find(x=>x.id===f.solicitudId);
+  const o=S.solicitudes.find(x=>x.id===f.solicitudId && x.tipo===f.solicitudTipo);
   const prefijo = o ? (o.tipo === 'narco' ? 'NAR-' : 'GEN-') : '';
   if(o){
     o.peritos=[...f.peritosSeleccionados];
     o.fhi=f.fechaHoraInforme;
+    await DB.modificarSolicitud(o.dbId, o);
   }
   closeM();
   showToast(`Asignación guardada para ${prefijo}${f.solicitudId}`);
-  await DB.saveSolicitudes();
-  nav(S.screen);
+  init_asignacion();
 }
+
+async function confirmAsig(id, tipo) {
+    const o = S.solicitudes.find(x => x.id === id && x.tipo === tipo);
+    if (o && o.estado === 'pendiente') {
+        o.estado = 'en-proceso';
+        await DB.modificarSolicitud(o.dbId, o);
+    }
+    if (!o) return;
+    const prefijo = tipo === 'narco' ? 'NAR-' : 'GEN-';
+    showToast('Asignación confirmada para ' + prefijo + id, 'success');
+    init_asignacion();
+};
 
 function renderNotifBadge() {
     const dot = document.getElementById('notif-dot');
@@ -364,7 +642,7 @@ function renderNotifDropdown() {
         return;
     }
     dd.innerHTML = pendientes.map(s => `
-        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id}'); document.getElementById('notif-dropdown').style.display='none';">
+        <div class="notif-item unread" onclick="nav('detalle-causa','${s.id+'@'+s.tipo}'); document.getElementById('notif-dropdown').style.display='none';">
             <div style="font-size:13px;font-weight:500;">Se le ha asignado una nueva solicitud</div>
             <div style="font-size:11px;color:var(--muted-fg);margin-top:4px;">N.º de Legajo de Causa ${esc(s.exp)}</div>
         </div>
@@ -382,4 +660,58 @@ async function markNotifAsRead() {
     S.notifLeidas[username] = [...readIds, ...unread.map(s => s.id)];
     await DB.saveNotifLeidas();
     renderNotifBadge();
+}
+
+let _lookupTimer = null;
+
+async function lookupExpediente(exp, disableIfFound = true) {
+    if (!exp || exp.trim() === '') {
+        disableCausaFields(false);
+        return;
+    }
+    try {
+        const res = await buscarCausaPorExpediente(exp.trim());
+        if (res.ok) {
+            const c = await res.json();
+            S.form.imputado = c.imputados || '';
+            S.form.victima = c.victimas || '';
+            S.form.delito = c.delito || '';
+            if (!S.editMode) S.form.tipo = (c.tipo || '').toLowerCase();
+            disableCausaFields(disableIfFound);
+            const tipoEl = document.getElementById('nom-tipo');
+            tipoEl.disabled = true;
+        } else if (res.status === 404) {
+            if (!S.editMode || exp !== S.editExpOriginal) {
+                S.form.imputado = '';
+                S.form.victima = '';
+                S.form.delito = '';
+            }
+            disableCausaFields(false);
+            if (!S.editMode) {
+                const tipoEl = document.getElementById('nom-tipo');
+                tipoEl.disabled = false;
+            }
+        }
+    } catch (e) {
+        disableCausaFields(false);
+    }
+    syncCausaFields();
+}
+
+function disableCausaFields(disabled) {
+    ['nom-imputado', 'nom-victima', 'nom-delito'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.disabled = disabled; }
+    });
+}
+
+function syncCausaFields() {
+    const f = S.form;
+    const el = (id) => document.getElementById(id);
+    const i = el('nom-imputado'); const v = el('nom-victima'); const d = el('nom-delito');
+    if (i) i.value = f.imputado || '';
+    if (v) v.value = f.victima || '';
+    if (d) d.value = f.delito || '';
+    const t = el('nom-tipo');
+    if (t) t.value = f.tipo || 'general';
 }

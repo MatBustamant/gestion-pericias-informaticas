@@ -7,19 +7,38 @@ window.init_causas = function() {
   if(S.causasUrgencia!=='todos') list=list.filter(o=>o.urgencia===S.causasUrgencia);
   if(S.causasJurisdiccion!=='todos') list=list.filter(o=>o.jur===S.causasJurisdiccion);
   
-  document.getElementById('causas-header').innerHTML = '<div><div class="page-title">Consulta de Solicitudes</div><div class="page-sub">'+list.length+' causas disponibles</div></div>';
+  // Search
   document.getElementById('causas-search').value = S.causasSearch;
-  
-  const ac={alta:'var(--p-high)',media:'var(--p-med)',baja:'var(--p-low)'};
-  document.getElementById('causas-btn-filter').innerHTML = '<button class="filter-btn'+(S.causasShowFilters?' active':'')+'" onclick="toggleCF()" style="display:flex;align-items:center;gap:6px;">'+ic('sliders',14)+' Filtros'+((S.causasEstado!=='todos'||S.causasUrgencia!=='todos'||S.causasJurisdiccion!=='todos')?'<span style="width:16px;height:16px;border-radius:50%;background:var(--primary);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;">'+[S.causasEstado,S.causasUrgencia,S.causasJurisdiccion].filter(f=>f!=='todos').length+'</span>':'')+'</button>';
-  
-  const juris=[...new Set(S.solicitudes.map(o=>o.jur))];
-  document.getElementById('causas-panel-filters').innerHTML = S.causasShowFilters?'<div class="filters-panel"><div><div class="fg-lbl">ESTADO</div><div class="filter-pills">'+
-  ['todos','pendiente','en-proceso','resuelto'].map(f=>'<button class="filter-btn'+(S.causasEstado===f?' active':'')+'" onclick="setCE(\''+f+'\')">'+{todos:'Todos',pendiente:'Pendiente',['en-proceso']:'En proceso',resuelto:'Resuelto'}[f]+'</button>').join('')+'</div></div><div class="filter-divider"></div>'+
-  '<div><div class="fg-lbl">URGENCIA</div><div class="filter-pills">'+['todos','alta','media','baja'].map(f=>'<button class="filter-btn'+(S.causasUrgencia===f?' active':'')+'" onclick="setCU(\''+f+'\')">'+{todos:'Todas',alta:'Alta',media:'Media',baja:'Baja'}[f]+'</button>').join('')+'</div></div><div class="filter-divider"></div>'+
-  '<div><div class="fg-lbl">CIRCUNSCRIPCIÓN</div><div class="filter-pills"><button class="filter-btn'+(S.causasJurisdiccion==='todos'?' active':'')+'" onclick="setCJ(\'todos\')">Todas</button>'+juris.map(j=>'<button class="filter-btn'+(S.causasJurisdiccion===j?' active':'')+'" onclick="setCJ(\''+j+'\')">'+j+'</button>').join('')+'</div></div></div>':'';
-  
-  document.getElementById('causas-list').innerHTML = '<div style="font-size:13px;color:var(--muted-fg);margin-bottom:12px;">'+list.length+' resultado'+(list.length!==1?'s':'')+(S.causasSearch?' para "<strong>'+esc(S.causasSearch)+'</strong>"':'')+'</div>'+
-  (list.length===0?'<div class="card"><div class="empty-state">'+ic('search',36,'var(--muted-fg)')+'<p style="font-size:15px;font-weight:500;margin-top:12px;">Sin resultados</p><p style="font-size:13px;margin-top:4px;">Prob\u00e1 con otros t\u00e9rminos o cambi\u00e1 los filtros</p></div></div>':'')+
-  list.map(o=>'<div class="causa-card" onclick="nav(\'detalle-causa\',\''+o.id+'\')"><div class="causa-accent" style="background:'+ac[o.urgencia]+';min-height:60px;"></div><div style="flex:1;min-width:0;"><div class="causa-meta" style="margin-bottom:4px;"><span class="td-mono" style="font-size:12px;">'+(o.tipo==='narco'?'NAR-':'GEN-')+esc(o.id)+'</span><span style="color:var(--muted-fg);">·</span><span style="font-size:12px;color:var(--muted-fg);">Exp. '+esc(o.exp)+'</span><span style="margin-left:auto;">'+bdg(o.estado)+'</span></div><div class="causa-title">'+esc(o.imputado)+' s/ '+esc(o.delito)+'</div><div class="causa-meta">'+ic('pin',11,'var(--muted-fg)')+' '+esc(o.jur)+' · '+ic('file',11,'var(--muted-fg)')+' '+esc(o.fiscal)+(o.peritos.length>0?' · '+ic('user',11,'var(--primary)')+' <span style="color:var(--primary);">'+esc(o.peritos.join(', '))+'</span>':'')+'</div></div><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();nav(\'detalle-causa\',\''+o.id+'\')">'+ic('eye',13)+' Ver</button></div>').join('');
+
+  // Filter button
+  const filterBtn = document.getElementById('causas-btn-filter');
+  filterBtn.classList.toggle('active', S.causasShowFilters);
+  const filterCount = [S.causasEstado, S.causasUrgencia, S.causasJurisdiccion].filter(f => f !== 'todos').length;
+  const countBadge = document.getElementById('causas-filter-count');
+  countBadge.classList.toggle('hidden', filterCount === 0);
+  if (filterCount > 0) countBadge.textContent = filterCount;
+
+  // Filter panel
+  const panel = document.getElementById('causas-panel-filters');
+  panel.classList.toggle('hidden', !S.causasShowFilters);
+  if (S.causasShowFilters) {
+    // Active pills
+    document.querySelectorAll('#causas-panel-filters [data-ce]').forEach(b => b.classList.toggle('active', b.dataset.ce === S.causasEstado));
+    document.querySelectorAll('#causas-panel-filters [data-cu]').forEach(b => b.classList.toggle('active', b.dataset.cu === S.causasUrgencia));
+    document.querySelectorAll('#causas-panel-filters [data-cj]').forEach(b => b.classList.toggle('active', b.dataset.cj === S.causasJurisdiccion));
+  }
+
+  // Resultados
+  const sub = document.getElementById('causas-subtitle');
+  sub.textContent = list.length + ' solicitud' + (list.length !== 1 ? 'es' : '') + ' disponible' + (list.length !== 1 ? 's' : '') + (S.causasSearch ? ' para "' + esc(S.causasSearch) + '"' : '');  
+
+  const empty = document.getElementById('causas-empty');
+  const cards = document.getElementById('causas-cards');
+  cards.innerHTML = '';
+  if (list.length === 0) {
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    list.forEach(o => cards.appendChild(buildCard(o, { mode: 'ver', onClick: true })));
+  }
 };

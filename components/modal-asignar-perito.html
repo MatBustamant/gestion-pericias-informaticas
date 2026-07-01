@@ -14,7 +14,7 @@
                 <div class="form-row">
                     <label>Fecha y hora programada para apertura del informe *</label>
                     <input type="datetime-local" id="am-fhi"
-                        oninput="S.aForm.fechaHoraInforme=this.value; updateModalData();">
+                            oninput="S.aForm.fechaHoraInforme=this.value;if(this.value){var d=new Date(this.value);if(!isNaN(d)){S.cal.year=d.getFullYear();S.cal.month=d.getMonth();}}updateModalData();">
                 </div>
                 <div class="form-row">
                     <label>Buscar y seleccionar peritos *</label>
@@ -29,7 +29,7 @@
             </div>
 
             <div class="modal-foot">
-                <button class="btn btn-ghost" onclick="closeM()">Cancelar</button>
+                <button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button>
                 <button class="btn btn-primary" onclick="saveAsig()">Guardar asignación</button>
             </div>
         </div>
@@ -41,7 +41,7 @@
                     <div class="modal-sub-txt" style="color: var(--muted-fg);">Visualización de agenda y
                         conflictos</div>
                 </div>
-                <button class="btn-icon" onclick="closeM()" style="color:var(--muted-fg);"><span data-ic="x"
+                <button class="btn-icon" onclick="cancelModal()" style="color:var(--muted-fg);"><span data-ic="x"
                         data-size="18"></span></button>
             </div>
             <div class="modal-body" style="padding: 0; background: var(--bg);" id="am-calendar-container">

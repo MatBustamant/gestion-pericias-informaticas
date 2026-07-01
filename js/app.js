@@ -207,8 +207,19 @@ function openModal(t){
     } 
     rmModal(); 
 }
+function cancelModal(){
+    if (S.modal === 'asignar-perito') {
+        showToast('Asignación cancelada.', 'warning');
+    } else if (S.modal === 'nueva-solicitud') {
+        if (S.deleteMode) showToast('Desestimación cancelada.', 'warning');
+        else if (S.editMode) showToast('Modificación cancelada.', 'warning');
+        else if (S.modalStep === 0) showToast('Búsqueda cancelada.', 'warning');
+        else showToast('Registro cancelado.', 'warning');
+    }
+    closeM();
+}
 function closeM(){S.modal=null;const e=document.getElementById('moverlay');if(e)e.remove();}
-function closeMOI(e){if(e.target.id==='moverlay')closeM();}
+function closeMOI(e){if(e.target.id==='moverlay')cancelModal();}
 function mNext(){S.modalStep=2; updateModalData(); } // Fíjate que acá ya no destruye el modal, solo actualiza la vista
 function mBack(){S.modalStep=1; updateModalData(); } // Acá tampoco
 function toggleP(nombre){if(!S.aForm.peritosSeleccionados)S.aForm.peritosSeleccionados=[];const i=S.aForm.peritosSeleccionados.indexOf(nombre);if(i>=0)S.aForm.peritosSeleccionados.splice(i,1);else S.aForm.peritosSeleccionados.push(nombre); updateModalData(); }
@@ -366,12 +377,12 @@ function updateModalData() {
         // 7. Botones del footer
         const foot = document.getElementById('nom-modal-foot');
         if (S.modalStep === 0) {
-            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="ejecutarBusquedaModal()">Continuar</button>`;
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button><button class="btn btn-primary" onclick="ejecutarBusquedaModal()">Continuar</button>`;
         } else if (S.deleteMode) {
-            foot.innerHTML = `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar desestimación</button>`;
+            foot.innerHTML = `<button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button><button class="btn btn-primary" style="background:var(--destructive); border-color:var(--destructive);" onclick="confirmarEliminacion()">Confirmar desestimación</button>`;
         } else {
             foot.innerHTML = S.modalStep === 1 
-                ? `<button class="btn btn-ghost" onclick="closeM()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar</button>`
+                ? `<button class="btn btn-ghost" onclick="cancelModal()">Cancelar</button><button class="btn btn-primary" onclick="mNext()">Continuar</button>`
                 : `<button class="btn btn-ghost" onclick="mBack()">← Atrás</button><button class="btn btn-primary" onclick="saveOficio()">${S.editMode ? 'Confirmar modificación' : 'Confirmar registro'}</button>`;
         }
 
